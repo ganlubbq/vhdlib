@@ -5,9 +5,12 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
+library work;
+use work.vhdlib_package.all;
+
 entity crc_gen_par is
   generic (
-    POLYNOMIAL : std_logic_vector := "100000100110000010001110110110111"; -- default is CRC32
+    POLYNOMIAL : std_logic_vector := CRC32_POLY; -- binary CRC polynomial
     DATA_WIDTH : integer := 8
   );
   port (
@@ -23,38 +26,12 @@ architecture rtl of crc_gen_par is
   type dat_in_matrix_t is array(crc_out'range) of std_logic_vector(dat_in'range);
   type crc_in_matrix_t is array(crc_out'range) of std_logic_vector(crc_in'range);
 
-  function xor_reduce(slv : in std_logic_vector) return std_logic is
-    variable r : std_logic;
-  begin
-    r := '0';
-    for i in slv'range loop
-      r := slv(i) XOR r;
-    end loop;
-    return r;
-  end;
-
-  function rem_of_single_bit (bit_offset : integer) return std_logic_vector is
-    variable v : std_logic_vector(DATA_WIDTH + POLYNOMIAL'length - 2 downto 0);
-    constant REM_LEN : integer := POLYNOMIAL'length - 1;
-  begin
-    v := (OTHERS => '0');
-    v(v'high-bit_offset) := '1';
-
-    for i in v'high downto REM_LEN loop
-      if v(i) = '1' then
-        v(i downto i-REM_LEN) := v(i downto i-REM_LEN) XOR POLYNOMIAL;
-      end if;
-    end loop;
-
-    return v(REM_LEN-1 downto 0);
-  end function rem_of_single_bit;
-
   function gen_dat_in_xor_matrix return dat_in_matrix_t is
     variable rem_vec : std_logic_vector(crc_out'range);
     variable ret_mat : dat_in_matrix_t;
   begin
     for j in dat_in'range loop
-      rem_vec := rem_of_single_bit(dat_in'high-j);
+      rem_vec := single_bit_poly_div(j+POLYNOMIAL'length, POLYNOMIAL);
       for i in crc_out'range loop
         ret_mat(i)(j) := rem_vec(i);
       end loop;
@@ -68,7 +45,7 @@ architecture rtl of crc_gen_par is
     variable ret_mat : crc_in_matrix_t;
   begin
     for j in crc_in'range loop
-      rem_vec := rem_of_single_bit(crc_in'high-j);
+      rem_vec := single_bit_poly_div(j+DATA_WIDTH+1, POLYNOMIAL);
       for i in crc_out'range loop
         ret_mat(i)(j) := rem_vec(i);
       end loop;

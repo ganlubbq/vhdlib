@@ -5,18 +5,18 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
+library work;
+use work.vhdlib_package.all;
+
 entity gf_multiplier is
-
   generic (
-    POLYNOMIAL : std_logic_vector := "10000001001" -- irreducible polynomial, default: P(x) = x^10 + x^3 + 1";
+    POLYNOMIAL : std_logic_vector := G709_GF_POLY -- irreducible, binary polynomial
   );
-
   port (
     mul_a     : in std_logic_vector(POLYNOMIAL'length-2 downto 0);
     mul_b     : in std_logic_vector(POLYNOMIAL'length-2 downto 0);
     product   : out std_logic_vector(POLYNOMIAL'length-2 downto 0)
   );
-
 end entity;
 
 architecture rtl of gf_multiplier is
