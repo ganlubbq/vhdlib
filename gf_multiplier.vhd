@@ -10,18 +10,18 @@ use work.vhdlib_package.all;
 
 entity gf_multiplier is
   generic (
-    POLYNOMIAL  : std_logic_vector := G709_GF_POLY -- irreducible, binary polynomial
+    GF_POLYNOMIAL   : std_logic_vector := G709_GF_POLY -- irreducible, binary polynomial
   );
   port (
-    mul_a       : in  std_logic_vector(POLYNOMIAL'length-2 downto 0);
-    mul_b       : in  std_logic_vector(POLYNOMIAL'length-2 downto 0);
-    product     : out std_logic_vector(POLYNOMIAL'length-2 downto 0)
+    mul_a           : in  std_logic_vector(GF_POLYNOMIAL'length-2 downto 0);
+    mul_b           : in  std_logic_vector(GF_POLYNOMIAL'length-2 downto 0);
+    product         : out std_logic_vector(GF_POLYNOMIAL'length-2 downto 0)
   );
 end entity;
 
 architecture rtl of gf_multiplier is
-  constant M  : integer := POLYNOMIAL'length-1;
-  constant PX : std_logic_vector(M downto 0) := POLYNOMIAL; -- make sure polynomial range is descending
+  constant M  : integer := GF_POLYNOMIAL'length-1;
+  constant PX : std_logic_vector(M downto 0) := GF_POLYNOMIAL; -- make sure polynomial range is descending
 
   type m_vector_array is array(M-1 downto 0) of std_logic_vector(M-1 downto 0);
   signal ofmat : m_vector_array; -- overflow signals matrix

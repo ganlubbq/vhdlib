@@ -26,14 +26,23 @@ package vhdlib_package is
   -- FUNCTION DECLARATIONS --
   ---------------------------
 
-  pure function xor_reduce(slv : in std_logic_vector)
+  -- XOR reduction of bit vector
+  pure function xor_reduce  (slv : std_logic_vector)
     return std_logic;
 
-  pure function bin_poly_div (dividend, divisor : std_logic_vector)
+  -- return remainder of binary polynomial division
+  pure function bin_poly_div (dividend  : std_logic_vector;
+                              divisor   : std_logic_vector)
     return std_logic_vector;
 
+  -- binary polynomial divisoin of monomial polynomial
   pure function single_bit_poly_div ( div_len  : integer;
                                       divisor  : std_logic_vector)
+    return std_logic_vector;
+
+  -- exponentiation of primitive GF(2^M) element
+  pure function prim_elem_exp (exp      : integer;
+                               gf_poly  : std_logic_vector)
     return std_logic_vector;
 
 end package vhdlib_package;
@@ -44,7 +53,7 @@ package body vhdlib_package is
   -- FUNCTION DEFINITIONS --
   --------------------------
 
-  pure function xor_reduce(slv : in std_logic_vector)
+  pure function xor_reduce(slv : std_logic_vector)
     return std_logic is
 
     variable r : std_logic;
@@ -56,7 +65,8 @@ package body vhdlib_package is
     return r;
   end;
 
-  pure function bin_poly_div (dividend, divisor : std_logic_vector)
+  pure function bin_poly_div (dividend  : std_logic_vector;
+                              divisor   : std_logic_vector)
     return std_logic_vector is
 
     constant M    : integer := divisor'length-1;
@@ -90,7 +100,14 @@ package body vhdlib_package is
   begin
     v := (v'high => '1', OTHERS => '0');
 
-    return bin_poly_div(v,divisor);
+    return bin_poly_div(v, divisor);
   end function single_bit_poly_div;
+
+  pure function prim_elem_exp (exp      : integer;
+                               gf_poly  : std_logic_vector)
+    return std_logic_vector is
+  begin
+    return single_bit_poly_div(exp+1, gf_poly);
+  end function prim_elem_exp;
 
 end package body vhdlib_package;

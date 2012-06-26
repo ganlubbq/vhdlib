@@ -1,6 +1,6 @@
---------------------------
--- GF Horner multiplier --
---------------------------
+---------------------------------
+-- GF Horner scheme multiplier --
+---------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -10,8 +10,8 @@ use work.vhdlib_package.all;
 
 entity gf_horner_multiplier is
   generic (
-    PRIM_ELEM     : std_logic_vector  := "00000010";    -- primitive element of GF(2^M)
     GF_POLYNOMIAL : std_logic_vector  := G709_GF_POLY;  -- irreducible, binary polynomial
+    PRIM_ELEM_POW : integer           := 1;             -- exponent of primitive element of GF(2^M)
     SYMBOL_WIDTH  : integer           := 8              -- size of codeword coefficients
   );
   port (
@@ -23,14 +23,17 @@ end entity;
 
 architecture rtl of gf_horner_multiplier is
 
-  signal product    : std_logic_vector(GF_POLYNOMIAL'length-2 downto 0);
-  signal symbol_pad : std_logic_vector(GF_POLYNOMIAL'length-2 downto 0);
+  constant M          : integer                         := GF_POLYNOMIAL'length-1;
+  constant PRIM_ELEM  : std_logic_vector(M-1 downto 0)  := prim_elem_exp(PRIM_ELEM_POW, GF_POLYNOMIAL);
+
+  signal product      : std_logic_vector(M-1 downto 0);
+  signal symbol_pad   : std_logic_vector(M-1 downto 0);
 
 begin
 
   gf_mul : entity work.gf_multiplier(rtl)
     generic map (
-      POLYNOMIAL  => GF_POLYNOMIAL
+      GF_POLYNOMIAL  => GF_POLYNOMIAL
     )
     port map (
       mul_a       => PRIM_ELEM,

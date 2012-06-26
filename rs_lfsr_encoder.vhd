@@ -46,12 +46,12 @@ begin
   gen_multipliers : for i in DT-1 downto 0 generate
     cons_multiplier : entity work.gf_multiplier(rtl)
       generic map (
-        POLYNOMIAL  => GF_POLYNOMIAL
+        GF_POLYNOMIAL   => GF_POLYNOMIAL
       )
       port map (
-        mul_a     => std_logic_vector(to_unsigned(GX(i),M)),
-        mul_b     => msg_xor,
-        product   => mul_out(i)
+        mul_a           => std_logic_vector(to_unsigned(GX(i),M)),
+        mul_b           => msg_xor,
+        product         => mul_out(i)
       );
   end generate gen_multipliers;
 
