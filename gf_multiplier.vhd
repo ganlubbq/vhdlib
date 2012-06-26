@@ -10,12 +10,12 @@ use work.vhdlib_package.all;
 
 entity gf_multiplier is
   generic (
-    POLYNOMIAL : std_logic_vector := G709_GF_POLY -- irreducible, binary polynomial
+    POLYNOMIAL  : std_logic_vector := G709_GF_POLY -- irreducible, binary polynomial
   );
   port (
-    mul_a     : in std_logic_vector(POLYNOMIAL'length-2 downto 0);
-    mul_b     : in std_logic_vector(POLYNOMIAL'length-2 downto 0);
-    product   : out std_logic_vector(POLYNOMIAL'length-2 downto 0)
+    mul_a       : in  std_logic_vector(POLYNOMIAL'length-2 downto 0);
+    mul_b       : in  std_logic_vector(POLYNOMIAL'length-2 downto 0);
+    product     : out std_logic_vector(POLYNOMIAL'length-2 downto 0)
   );
 end entity;
 

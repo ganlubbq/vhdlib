@@ -4,26 +4,28 @@ use ieee.std_logic_1164.all;
 package vhdlib_package is
 
   -----------
-  -- Types --
+  -- TYPES --
   -----------
+
   -- Type for GF(2^M) polynomials as integer arrays
   type gf2m_poly_t is array(natural range <>) of natural;
 
+  ---------------
+  -- CONSTANTS --
+  ---------------
 
-  ---------------
-  -- Constants --
-  ---------------
   -- binary polynomials
-  constant CRC32_POLY   : std_logic_vector := "100000100110000010001110110110111";
-  constant G709_GF_POLY : std_logic_vector := "100011101";
-  constant G975_I10_GF_POLY : std_logic_vector := "10000001001";
+  constant CRC32_POLY         : std_logic_vector := "100000100110000010001110110110111";
+  constant G709_GF_POLY       : std_logic_vector := "100011101";
+  constant G975_I10_GF_POLY   : std_logic_vector := "10000001001";
 
   -- G709 RS(255,239) generator polynomial
   constant G709_GEN_POLY : gf2m_poly_t := (1, 59, 13, 104, 189, 68, 209, 30, 8, 163, 65, 41, 229, 98, 50, 36, 59);
 
-  ---------------
-  -- Functions --
-  ---------------
+  ---------------------------
+  -- FUNCTION DECLARATIONS --
+  ---------------------------
+
   pure function xor_reduce(slv : in std_logic_vector)
     return std_logic;
 
@@ -37,6 +39,10 @@ package vhdlib_package is
 end package vhdlib_package;
 
 package body vhdlib_package is
+
+  --------------------------
+  -- FUNCTION DEFINITIONS --
+  --------------------------
 
   pure function xor_reduce(slv : in std_logic_vector)
     return std_logic is
