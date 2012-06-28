@@ -1,5 +1,6 @@
---------------------------------------------------------------
---------------------------------------------------------------
+------------------------------------------------
+-- Syndrome calculator for codes over GF(2^M) --
+------------------------------------------------
 library ieee;
 use ieee.std_logic_1164.all;
 
@@ -38,6 +39,7 @@ begin
 
   -- Horner scheme multipliers
   gen_syndromes : for j in 1 to NO_OF_SYNDROMES generate
+  begin
     gen_symbols : for i in 0 to NO_OF_SYMBOLS-1 generate
     begin
       gen_top_multipliers : if i = 0 generate
@@ -53,7 +55,6 @@ begin
             product_in  => syndrome_wires(j),
             product_out => connections(j,i+1)
           );
-
       end generate gen_top_multipliers;
 
       gen_rest_of_multipliers : if i > 0 generate
@@ -69,7 +70,6 @@ begin
             product_in  => connections(j,i),
             product_out => connections(j,i+1)
           );
-
       end generate gen_rest_of_multipliers;
     end generate gen_symbols;
   end generate gen_syndromes;
