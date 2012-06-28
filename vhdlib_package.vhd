@@ -15,9 +15,14 @@ package vhdlib_package is
   ---------------
 
   -- binary polynomials
-  constant CRC32_POLY         : std_logic_vector := "100000100110000010001110110110111";
-  constant G709_GF_POLY       : std_logic_vector := "100011101";
-  constant G975_I10_GF_POLY   : std_logic_vector := "10000001001";
+  constant CRC32_POLY         : std_logic_vector  := "100000100110000010001110110110111";
+  constant G709_GF_POLY       : std_logic_vector  := "100011101";
+  constant G975_I10_GF_POLY   : std_logic_vector  := "10000001001";
+
+  -- lookup table types
+  constant INV_TABLE_TYPE     : string            := "INVERSE";
+  constant LOG_TABLE_TYPE     : string            := "LOGARITHM";
+  constant EXP_TABLE_TYPE     : string            := "EXPONENT";
 
   -- G709 RS(255,239) generator polynomial
   constant G709_GEN_POLY : gf2m_poly_t := (1, 59, 13, 104, 189, 68, 209, 30, 8, 163, 65, 41, 229, 98, 50, 36, 59);
@@ -98,7 +103,8 @@ package body vhdlib_package is
 
     variable v : std_logic_vector(div_len-1 downto 0);
   begin
-    v := (v'high => '1', OTHERS => '0');
+    v         := (OTHERS => '0');
+    v(v'high) := '1';
 
     return bin_poly_div(v, divisor);
   end function single_bit_poly_div;
