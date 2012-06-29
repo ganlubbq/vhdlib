@@ -48,20 +48,18 @@ architecture rtl of gf_lookup_table is
 
     elsif TABLE_TYPE = LOG_TABLE_TYPE then
       ret(0)        := (OTHERS => '0'); -- not defined
-      ret(1)        := (OTHERS => '0'); -- 1 = a^0 = a^(2^M-1)
 
       -- iterate over powers of primitive element
-      for i in 1 to 2**M-2 loop
+      for i in 0 to 2**M-2 loop
         index_elem  := prim_elem_exp(i, GF_POLYNOMIAL);
         value_elem  := std_logic_vector(to_unsigned(i,M));
         ret(to_integer(unsigned(index_elem))) := value_elem;
       end loop;
 
     elsif TABLE_TYPE = EXP_TABLE_TYPE then
-      ret(0)        := std_logic_vector(to_unsigned(1,M)); -- a^0 = 1
 
       -- iterate over powers of primitive element
-      for i in 1 to 2**M-1 loop
+      for i in 0 to 2**M-1 loop
         index_elem  := std_logic_vector(to_unsigned(i,M));
         value_elem  := prim_elem_exp(i, GF_POLYNOMIAL);
         ret(to_integer(unsigned(index_elem))) := value_elem;
