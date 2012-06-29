@@ -11,7 +11,7 @@ entity syndrome_calculator is
   generic (
     GF_POLYNOMIAL   : std_logic_vector := G709_GF_POLY; -- irreducible, binary polynomial
     SYMBOL_WIDTH    : integer := 8;
-    NO_OF_SYMBOLS   : integer := 1;
+    NO_OF_SYMBOLS   : integer := 10;
     NO_OF_SYNDROMES : integer := 6
   );
   port (
@@ -19,9 +19,9 @@ entity syndrome_calculator is
     rst             : in  std_logic;
     en              : in  std_logic;
     new_word        : in  std_logic;
-    symbols         : in  std_logic_vector(SYMBOL_WIDTH*NO_OF_SYMBOLS-1 downto 0);
-    syndromes_in    : in  std_logic_vector(NO_OF_SYNDROMES*(GF_POLYNOMIAL'length-1)-1 downto 0);
-    syndromes_out   : out std_logic_vector(NO_OF_SYNDROMES*(GF_POLYNOMIAL'length-1)-1 downto 0)
+    symbols         : in  std_logic_vector(SYMBOL_WIDTH*NO_OF_SYMBOLS-1 downto 0);                -- highest order symbol on MSBs, descending
+    syndromes_in    : in  std_logic_vector(NO_OF_SYNDROMES*(GF_POLYNOMIAL'length-1)-1 downto 0);  -- lowest order syndrome on MSBs, ascending
+    syndromes_out   : out std_logic_vector(NO_OF_SYNDROMES*(GF_POLYNOMIAL'length-1)-1 downto 0)   -- lowest order syndrome on MSBs, ascending
   );
 end entity;
 
