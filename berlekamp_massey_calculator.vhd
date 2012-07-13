@@ -38,12 +38,14 @@ architecture rtl of berlekamp_massey_calculator is
   signal n                : integer range 0 to 2*CORRECTABLE_ERR;
   signal k                : integer range 1 to 2*CORRECTABLE_ERR;
   signal d                : gf_elem;
-  signal d_new            : gf_elem;
   signal d_mul_a_inputs   : gf_array_desc_t;
   signal d_mul_b_inputs   : gf_array_desc_t;
   signal d_mul_outputs    : gf_array_desc_t;
   signal b                : gf_elem;
   signal b_inv            : gf_elem;
+  signal b_inv_mux        : gf_elem;
+  signal use_b_inv        : std_logic;
+  signal d_inv            : gf_elem;
   signal d_b_inv          : gf_elem;
   signal cx               : gf_array_desc_t;
   signal cx_new           : gf_array_desc_t;
@@ -54,8 +56,6 @@ architecture rtl of berlekamp_massey_calculator is
   signal calculator_state : calculator_state_t;
 
 begin
-
-  ready           <= '1' when calculator_state = IDLE else '0';
 
   ------------------------------
   -- Component instantiations --
@@ -93,7 +93,7 @@ begin
     )
     port map (
       mul_a           => d,
-      mul_b           => b_inv,
+      mul_b           => b_inv_mux,
       product         => d_b_inv
     );
 
@@ -105,7 +105,18 @@ begin
     port map (
       clk             => clk,
       elem_in         => b,
-      elem_out        => b_inv
+      elem_out        => b_inv -- TODO: doesn't work
+    );
+
+  inverse_b_new_table : entity work.gf_lookup_table(rtl)
+    generic map (
+      GF_POLYNOMIAL   => GF_POLYNOMIAL,
+      TABLE_TYPE      => INV_TABLE_TYPE
+    )
+    port map (
+      clk             => clk,
+      elem_in         => d,
+      elem_out        => d_inv
     );
 
   ---------------
@@ -115,10 +126,10 @@ begin
   clk_proc : process(clk, rst)
   begin
     if rst = '1' then
+      use_b_inv         <= '0';
       L                 <= 0;
       n                 <= 0;
       k                 <= 1;
-      d                 <= GF_ZERO;
       b                 <= GF_ONE;
       cx                <= (0 => GF_ONE, OTHERS => GF_ZERO);
       bx                <= (0 => GF_ONE, OTHERS => GF_ZERO);
@@ -127,6 +138,8 @@ begin
       calculator_state  <= IDLE;
     elsif rising_edge(clk) then
 
+      use_b_inv       <= '1';
+
       if calculator_state = CALCULATING then
         -- increment iterator and shift syndromes 1 to the left
         n             <= n + 1;
@@ -134,20 +147,20 @@ begin
         syndromes(syndromes'high(1) downto 1) <= syndromes(syndromes'high(1)-1 downto 0);
 
 
-        -- store and evaluate newly calculated discrepancy
-        d       <= d_new;
+        -- evaluate newly calculated discrepancy
 
-        if d_new = GF_ZERO then
-          k     <= k + 1;
+        if d = GF_ZERO then
+          k         <= k + 1;
         elsif 2*L <= n then
-          bx    <= cx;
-          L     <= n + 1 - L;
-          b     <= d_new;
-          cx    <= cx_new;
-          k     <= 1;
+          bx        <= cx;
+          L         <= n + 1 - L;
+          b         <= d;
+          cx        <= cx_new;
+          k         <= 1;
+          use_b_inv <= '0';
         else
-          cx    <= cx_new;
-          k     <= k + 1;
+          cx        <= cx_new;
+          k         <= k + 1;
         end if;
 
         -- check if iteration is over
@@ -161,7 +174,6 @@ begin
         L                 <= 0;
         n                 <= 0;
         k                 <= 1;
-        d                 <= GF_ZERO;
         b                 <= GF_ONE;
         cx                <= (0 => GF_ONE, OTHERS => GF_ZERO);
         bx                <= (0 => GF_ONE, OTHERS => GF_ZERO);
@@ -187,9 +199,12 @@ begin
                         cx,
                         cx_adj_a_inputs,
                         cx_adj_outputs,
-                        calculator_state
+                        calculator_state,
+                        use_b_inv,
+                        b_inv,
+                        d_inv
                       )
-    variable var_d_new    : gf_elem;
+    variable var_d        : gf_elem;
     variable var_cx_new   : gf_elem;
   begin
     -- set inputs for discrepancy multipliers input a (C(x) coefficients)
@@ -217,11 +232,11 @@ begin
     end loop;
 
     -- add discrepancy multiplication products together
-    var_d_new := GF_ZERO;
+    var_d := GF_ZERO;
     for i in d_mul_outputs'range(1) loop
-      var_d_new := var_d_new XOR d_mul_outputs(i);
+      var_d := var_d XOR d_mul_outputs(i);
     end loop;
-    d_new <= var_d_new;
+    d <= var_d;
 
     -- add C(x) adjustment multiplication products together with old C(x)
     for i in cx_adj_outputs'range(1) loop
@@ -237,6 +252,12 @@ begin
     else
       ready <= '0';
       err_locator_out <= (OTHERS => '0');
+    end if;
+
+    if use_b_inv = '1' then
+      b_inv_mux <= b_inv;
+    else
+      b_inv_mux <= d_inv;
     end if;
 
   end process comb_proc;
