@@ -27,7 +27,6 @@ architecture rtl of berlekamp_massey_calculator is
 
   subtype gf_elem is std_logic_vector(M-1 downto 0);
   type gf_array_desc_t is array(2*CORRECTABLE_ERR-1 downto 0) of gf_elem;
-  type gf_array_asc_t is array(0 to 2*CORRECTABLE_ERR-1) of gf_elem;
   type calculator_state_t is (IDLE, CALCULATING);
 
   constant GF_ZERO  : gf_elem := (OTHERS => '0');
@@ -43,7 +42,7 @@ architecture rtl of berlekamp_massey_calculator is
   signal d_mul_outputs    : gf_array_desc_t;
   signal b                : gf_elem;
   signal b_inv            : gf_elem;
-  signal b_inv_mux        : gf_elem;
+  signal inv_mux          : gf_elem;
   signal use_b_inv        : std_logic;
   signal d_inv            : gf_elem;
   signal d_b_inv          : gf_elem;
@@ -93,7 +92,7 @@ begin
     )
     port map (
       mul_a           => d,
-      mul_b           => b_inv_mux,
+      mul_b           => inv_mux,
       product         => d_b_inv
     );
 
@@ -136,19 +135,20 @@ begin
       syndromes         <= (OTHERS => GF_ZERO);
 
       calculator_state  <= IDLE;
+      ready             <= '0';
+      err_locator_out   <= (OTHERS => '0');
     elsif rising_edge(clk) then
 
       use_b_inv       <= '1';
 
       if calculator_state = CALCULATING then
-        -- increment iterator and shift syndromes 1 to the left
+        -- increment iterator and cycle syndromes 1 to the left
         n             <= n + 1;
         syndromes(0)  <= syndromes(syndromes'high(1));
         syndromes(syndromes'high(1) downto 1) <= syndromes(syndromes'high(1)-1 downto 0);
 
 
         -- evaluate newly calculated discrepancy
-
         if d = GF_ZERO then
           k         <= k + 1;
         elsif 2*L <= n then
@@ -186,6 +186,17 @@ begin
 
         calculator_state  <= CALCULATING;
       end if;
+
+      -- set output and ready when calculation is over
+      if calculator_state = IDLE then
+        ready <= '1';
+        for i in cx'range(1) loop
+          err_locator_out((i+1)*M-1 downto i*M)  <= cx(i);
+        end loop;
+      else
+        ready           <= '0';
+        err_locator_out <= (OTHERS => '0');
+      end if;
     end if;
   end process clk_proc;
 
@@ -199,7 +210,6 @@ begin
                         cx,
                         cx_adj_a_inputs,
                         cx_adj_outputs,
-                        calculator_state,
                         use_b_inv,
                         b_inv,
                         d_inv
@@ -243,21 +253,10 @@ begin
       cx_new(i) <= cx(i) XOR cx_adj_outputs(i);
     end loop;
 
-    -- set output and ready when calculation is over
-    if calculator_state = IDLE then
-      ready <= '1';
-      for i in cx'range(1) loop
-        err_locator_out((i+1)*M-1 downto i*M)  <= cx(i);
-      end loop;
-    else
-      ready <= '0';
-      err_locator_out <= (OTHERS => '0');
-    end if;
-
     if use_b_inv = '1' then
-      b_inv_mux <= b_inv;
+      inv_mux <= b_inv;
     else
-      b_inv_mux <= d_inv;
+      inv_mux <= d_inv;
     end if;
 
   end process comb_proc;
