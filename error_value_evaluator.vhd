@@ -36,6 +36,7 @@ architecture rtl of error_value_evaluator is
   -- TODO: give reasonable names to signals
   signal n                : integer range 0 to 2*CORRECTABLE_ERR;
   signal k                : integer range 0 to 2*CORRECTABLE_ERR;
+  signal shift_output     : std_logic;
   signal err_eval_coef    : gf_elem;
   signal mul_outputs      : gf_array_desc_t;
   signal err_eval         : gf_array_desc_t;
@@ -71,6 +72,7 @@ begin
     if rst = '1' then
       n                 <= 0;
       k                 <= 0;
+      shift_output      <= '0';
       syndromes         <= (OTHERS => GF_ZERO);
       err_locator       <= (OTHERS => GF_ZERO);
       err_eval          <= (OTHERS => GF_ZERO);
@@ -86,13 +88,17 @@ begin
         syndromes(syndromes'high(1))  <= GF_ZERO;
         syndromes(syndromes'high(1)-1 downto 0) <= syndromes(syndromes'high(1) downto 1);
 
-        -- store newly calculated coefficient of error-value evaluator
---         err_eval(n) <= err_eval_coef;
-
-        if err_locator(err_locator'high(1)-n) /= GF_ZERO then
+        -- shift output one to the right as highest order term of error locator has not yet been encountered
+        if shift_output = '1' then
           k <= k + 1;
         end if;
 
+        -- highest order term of error locator encountered; stop shifting output
+        if err_locator(err_locator'high(1)-n) /= GF_ZERO then
+          shift_output  <= '1';
+        end if;
+
+        -- store newly calculated coefficient of error-value evaluator
         err_eval(k) <= err_eval_coef;
 
         -- check if iteration is over
@@ -105,6 +111,7 @@ begin
       if new_calc = '1' then
         n                 <= 0;
         k                 <= 0;
+        shift_output      <= '0';
 
         -- read in syndromes
         for i in syndromes'high(1) downto 0 loop
@@ -120,13 +127,11 @@ begin
       end if;
 
       -- set output and ready when calculation is over
-      err_eval_out  <= (OTHERS => '0');
-
       if calculator_state = IDLE then
         ready   <= '1';
-        -- shift result one to the right
-        for i in err_eval'high(1) downto 1 loop
-          err_eval_out(i*M-1 downto (i-1)*M)  <= err_eval(i);
+
+        for i in err_eval'range(1) loop
+          err_eval_out((i+1)*M-1 downto i*M)  <= err_eval(i);
         end loop;
       else
         ready  <= '0';
