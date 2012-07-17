@@ -18,7 +18,7 @@ entity syndrome_calculator is
     clk             : in  std_logic;
     rst             : in  std_logic;
     en              : in  std_logic;
-    new_word        : in  std_logic;
+    new_calc        : in  std_logic;
     symbols         : in  std_logic_vector(SYMBOL_WIDTH*NO_OF_SYMBOLS-1 downto 0);                -- highest order symbol on MSBs, descending
     syndromes_in    : in  std_logic_vector(NO_OF_SYNDROMES*(GF_POLYNOMIAL'length-1)-1 downto 0);  -- lowest order syndrome on MSBs, ascending
     syndromes_out   : out std_logic_vector(NO_OF_SYNDROMES*(GF_POLYNOMIAL'length-1)-1 downto 0)   -- lowest order syndrome on MSBs, ascending
@@ -28,8 +28,11 @@ end entity;
 architecture rtl of syndrome_calculator is
   constant M  : integer := GF_POLYNOMIAL'length-1;
 
-  type connections_t is array(1 to NO_OF_SYNDROMES, 1 to NO_OF_SYMBOLS) of std_logic_vector(M-1 downto 0);
-  type gf_elements_t is array(1 to NO_OF_SYNDROMES) of std_logic_vector(M-1 downto 0);
+  subtype gf_elem is std_logic_vector(M-1 downto 0);
+  type connections_t is array(1 to NO_OF_SYNDROMES, 1 to NO_OF_SYMBOLS) of gf_elem;
+  type gf_elements_t is array(1 to NO_OF_SYNDROMES) of gf_elem;
+
+  constant GF_ZERO  : gf_elem := (OTHERS => '0');
 
   signal connections    : connections_t;
   signal syndrome_regs  : gf_elements_t;
@@ -44,7 +47,7 @@ begin
     begin
       gen_top_multipliers : if i = 0 generate
       begin
-        horner_multiplier : entity work.gf_horner_multiplier
+        horner_multiplier : entity work.gf_horner_multiplier(rtl)
           generic map (
             GF_POLYNOMIAL => GF_POLYNOMIAL,
             PRIM_ELEM_POW => j,
@@ -59,7 +62,7 @@ begin
 
       gen_rest_of_multipliers : if i > 0 generate
       begin
-        horner_multiplier : entity work.gf_horner_multiplier
+        horner_multiplier : entity work.gf_horner_multiplier(rtl)
           generic map (
             GF_POLYNOMIAL => GF_POLYNOMIAL,
             PRIM_ELEM_POW => j,
@@ -77,7 +80,7 @@ begin
   clk_proc : process (clk, rst)
   begin
     if rst = '1' then
-      syndrome_regs <= (OTHERS => (OTHERS => '0'));
+      syndrome_regs <= (OTHERS => GF_ZERO);
     elsif rising_edge(clk) then
       if en = '1' then
         for i in 1 to NO_OF_SYNDROMES loop
@@ -87,10 +90,10 @@ begin
     end if;
   end process clk_proc;
 
-  comb_proc : process(syndrome_regs, new_word, syndromes_in)
+  comb_proc : process(syndrome_regs, new_calc, syndromes_in)
   begin
     for i in 1 to NO_OF_SYNDROMES loop
-      if new_word = '1' then
+      if new_calc = '1' then
         syndrome_wires(i) <= syndromes_in(syndromes_in'high-(i-1)*M downto syndromes_in'length-i*M);
       else
         syndrome_wires(i) <= syndrome_regs(i);

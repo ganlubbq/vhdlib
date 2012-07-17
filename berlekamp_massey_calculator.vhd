@@ -139,6 +139,8 @@ begin
       err_locator_out   <= (OTHERS => '0');
     elsif rising_edge(clk) then
 
+      -- preassignments
+      ready           <= '0';
       use_b_inv       <= '1';
 
       if calculator_state = CALCULATING then
@@ -189,12 +191,11 @@ begin
 
       -- set output and ready when calculation is over
       if calculator_state = IDLE then
-        ready <= '1';
+        ready           <= '1';
         for i in cx'range(1) loop
           err_locator_out((i+1)*M-1 downto i*M)  <= cx(i);
         end loop;
       else
-        ready           <= '0';
         err_locator_out <= (OTHERS => '0');
       end if;
     end if;

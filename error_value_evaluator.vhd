@@ -82,6 +82,8 @@ begin
 
     elsif rising_edge(clk) then
 
+      ready             <= '0'; -- preassignment
+
       if calculator_state = CALCULATING then
         -- increment iterator and shift syndromes 1 to the right
         n             <= n + 1;
@@ -133,8 +135,6 @@ begin
         for i in err_eval'range(1) loop
           err_eval_out((i+1)*M-1 downto i*M)  <= err_eval(i);
         end loop;
-      else
-        ready  <= '0';
       end if;
     end if;
   end process clk_proc;
