@@ -25,7 +25,7 @@ package vhdlib_package is
   constant EXP_TABLE_TYPE     : string            := "EXPONENT";
 
   -- G709 RS(255,239) generator polynomial
-  constant G709_GEN_POLY : gf2m_poly_t := (1, 59, 13, 104, 189, 68, 209, 30, 8, 163, 65, 41, 229, 98, 50, 36, 59);
+  constant G709_GEN_POLY      : gf2m_poly_t       := (1, 59, 13, 104, 189, 68, 209, 30, 8, 163, 65, 41, 229, 98, 50, 36, 59);
 
   ---------------------------
   -- FUNCTION DECLARATIONS --
@@ -40,7 +40,7 @@ package vhdlib_package is
                               divisor   : std_logic_vector)
     return std_logic_vector;
 
-  -- binary polynomial divisoin of monomial polynomial
+  -- binary polynomial division of monomial polynomial
   pure function single_bit_poly_div ( div_len  : integer;
                                       divisor  : std_logic_vector)
     return std_logic_vector;
