@@ -91,11 +91,9 @@ begin
       k                 <= 0;
       n                 <= (OTHERS => '0');
       calculator_state  <= IDLE;
-      ready             <= '0';
       root_found        <= '0';
     elsif rising_edge(clk) then
       -- preassignments
-      ready             <= '0';
       root_found        <= '0';
 
       if new_calc = '1' then
@@ -110,25 +108,19 @@ begin
       end if;
 
       if calculator_state = CALCULATING then
-        if n = 2**M-2 then
+        if n = 2**M-1 then
           calculator_state  <= IDLE;
         else
           n <= n + 1;
         end if;
 
-        if gammas_sum = GF_ZERO then
+        if n /= 2**M-1 and gammas_sum = GF_ZERO then
           -- alpha^n is a root of the error locator
           root_found        <= '1';
         end if;
 
         -- set new gamma values
         gammas  <= gammas_new;
-
-        if calculator_state = IDLE then
-          ready <= '1';
-          -- output calculated values
-          -- TODO: Output one cycle later than expected
-        end if;
       end if;
 
       if root_found = '1' then
@@ -142,7 +134,12 @@ begin
     end if;
   end process clk_proc;
 
-  comb_proc : process( gammas )
+  comb_proc : process( gammas,
+                       err_roots,
+                       err_locations,
+                       calculator_state,
+                       rst
+                     )
     variable var_gammas_sum   : gf_elem;
   begin
     -- add multiplication products together
@@ -151,6 +148,19 @@ begin
       var_gammas_sum := gammas(i) XOR var_gammas_sum;
     end loop;
     gammas_sum        <= var_gammas_sum;
+
+    -- output calculated values
+    for i in CORRECTABLE_ERR-1 downto 0 loop
+      err_roots_out((i+1)*M-1 downto i*M)     <= err_roots(i);
+      err_locations_out((i+1)*M-1 downto i*M) <= err_locations(i);
+    end loop;
+
+    if calculator_state = IDLE and rst = '0' then
+      ready <= '1';
+    else
+      ready <= '0';
+    end if;
+
   end process comb_proc;
 
 end rtl;
