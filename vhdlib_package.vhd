@@ -58,18 +58,40 @@ package body vhdlib_package is
   -- FUNCTION DEFINITIONS --
   --------------------------
 
+  --
+  -- Function     : xor_reduce
+  --
+  -- Description  : XOR reduction of a logic vector.
+  --                Becomes superfluous in VHDL-2008.
+  --
+  -- Input        :
+  --  slv         : Vector to be reduced.
+  --
+  -- Output       : Reduction of vector as single logic value.
+  --
   pure function xor_reduce(slv : std_logic_vector)
     return std_logic is
 
     variable r : std_logic;
   begin
-    r := '0';
+    r   := '0';
     for i in slv'range loop
       r := slv(i) XOR r;
     end loop;
     return r;
   end;
 
+  --
+  -- Function     : bin_poly_div
+  --
+  -- Description  : Binary polynomial division.
+  --
+  -- Input        :
+  --  dividend    : Polynomial to be divided.
+  --  divisor     : Divisor used for dividing the dividend.
+  --
+  -- Output       : Remainder polynomial from division.
+  --
   pure function bin_poly_div (dividend  : std_logic_vector;
                               divisor   : std_logic_vector)
     return std_logic_vector is
@@ -78,7 +100,7 @@ package body vhdlib_package is
     variable v    : std_logic_vector(dividend'length-1 downto 0);
     variable ret  : std_logic_vector(M-1 downto 0);
   begin
-    v := dividend;
+    v   := dividend;
     ret := (OTHERS => '0');
 
     for i in v'high downto M loop
@@ -97,6 +119,19 @@ package body vhdlib_package is
     return ret;
   end function bin_poly_div;
 
+
+  --
+  -- Function     : single_bit_poly_div
+  --
+  -- Description  : Binary polynomial division of dividend
+  --                with only one non-zero term.
+  --
+  -- Input        :
+  --  div_len     : Degree of dividend plus 1.
+  --  divisor     : Divisor used for dividing the dividend.
+  --
+  -- Output       : Remainder polynomial from division.
+  --
   pure function single_bit_poly_div ( div_len  : integer;
                                       divisor  : std_logic_vector)
     return std_logic_vector is
@@ -109,6 +144,19 @@ package body vhdlib_package is
     return bin_poly_div(v, divisor);
   end function single_bit_poly_div;
 
+  --
+  -- Function     : prim_elem_exp
+  --
+  -- Description  : Calculates the nth power of a primitive
+  --                element from GF(2^M).
+  --
+  -- Input        :
+  --  exp         : The power of the primitive element.
+  --  gf_poly     : Irreducible polynomial used to construct GF(2^M).
+  --
+  -- Output       : An element from GF(2^M) that is the nth power of
+  --                the primitive element.
+  --
   pure function prim_elem_exp (exp      : integer;
                                gf_poly  : std_logic_vector)
     return std_logic_vector is
