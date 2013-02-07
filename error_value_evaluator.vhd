@@ -9,8 +9,8 @@ use work.vhdlib_package.all;
 
 entity error_value_evaluator is
   generic (
-    GF_POLYNOMIAL   : std_logic_vector := G709_GF_POLY; -- irreducible, binary polynomial
-    CORRECTABLE_ERR : integer := 3
+    GF_POLYNOMIAL   : std_logic_vector  := G709_GF_POLY; -- irreducible, binary polynomial
+    CORRECTABLE_ERR : integer           := 3
   );
   port (
     clk             : in  std_logic;
@@ -86,8 +86,8 @@ begin
 
       if calculator_state = CALCULATING then
         -- increment iterator and shift syndromes 1 to the right
-        n             <= n + 1;
-        syndromes(syndromes'high(1))  <= GF_ZERO;
+        n                                       <= n + 1;
+        syndromes(syndromes'high(1))            <= GF_ZERO;
         syndromes(syndromes'high(1)-1 downto 0) <= syndromes(syndromes'high(1) downto 1);
 
         -- shift output one to the right as highest order term of error locator has not yet been encountered
@@ -111,21 +111,21 @@ begin
 
       -- if new input is given then reset calculation
       if new_calc = '1' then
-        n                 <= 0;
-        k                 <= 0;
-        shift_output      <= '0';
+        n             <= 0;
+        k             <= 0;
+        shift_output  <= '0';
 
         -- read in syndromes
         for i in syndromes'high(1) downto 0 loop
-          syndromes(i)    <= syndromes_in((i+1)*M-1 downto i*M);
+          syndromes(i) <= syndromes_in((i+1)*M-1 downto i*M);
         end loop;
 
         -- read in error locator
         for i in err_locator'high(1) downto 0 loop
-          err_locator(i)  <= err_locator_in((i+1)*M-1 downto i*M);
+          err_locator(i) <= err_locator_in((i+1)*M-1 downto i*M);
         end loop;
 
-        calculator_state  <= CALCULATING;
+        calculator_state <= CALCULATING;
       end if;
 
       -- set output and ready when calculation is over
@@ -147,7 +147,7 @@ begin
     for i in mul_outputs'range(1) loop
       var_err_eval_coef := mul_outputs(i) XOR var_err_eval_coef;
     end loop;
-    err_eval_coef       <= var_err_eval_coef;
+    err_eval_coef <= var_err_eval_coef;
 
   end process comb_proc;
 

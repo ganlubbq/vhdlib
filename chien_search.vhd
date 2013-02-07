@@ -30,7 +30,7 @@ architecture rtl of chien_search is
 
   subtype gf_elem         is std_logic_vector(M-1 downto 0);
   type gf_array_desc_t    is array(CORRECTABLE_ERR downto 0) of gf_elem;
-  type gf_output_values   is array(CORRECTABLE_ERR-1 downto 0) of gf_elem;
+  type gf_output_values_t is array(CORRECTABLE_ERR-1 downto 0) of gf_elem;
   type calculator_state_t is (IDLE, CALCULATING);
 
   constant GF_ZERO        : gf_elem := (OTHERS => '0');
@@ -39,9 +39,9 @@ architecture rtl of chien_search is
   signal gammas           : gf_array_desc_t;
   signal gammas_new       : gf_array_desc_t;
   signal gammas_sum       : gf_elem;
-  signal err_roots        : gf_output_values;
-  signal err_locations    : gf_output_values;
-  signal bit_locations    : gf_output_values;
+  signal err_roots        : gf_output_values_t;
+  signal err_locations    : gf_output_values_t;
+  signal bit_locations    : gf_output_values_t;
   signal k                : integer range 0 to CORRECTABLE_ERR-1;
   signal n                : unsigned(M-1 downto 0);
   signal calculator_state : calculator_state_t;

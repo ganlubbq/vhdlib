@@ -9,6 +9,7 @@ package vhdlib_package is
 
   -- Type for GF(2^M) polynomials as integer arrays
   type gf2m_poly_t is array(natural range <>) of natural;
+  type bin_matrix_t is array(natural range <>, natural range <>) of std_logic;
 
   ---------------
   -- CONSTANTS --
@@ -16,6 +17,8 @@ package vhdlib_package is
 
   -- binary polynomials
   constant CRC32_POLY         : std_logic_vector  := "100000100110000010001110110110111";
+  constant PRBS_32_POLY       : std_logic_vector  := "100000000010000000000000000000111";
+  constant PRBS_3_POLY        : std_logic_vector  := "1101";
   constant G709_GF_POLY       : std_logic_vector  := "100011101";
   constant G975_I10_GF_POLY   : std_logic_vector  := "10000001001";
 
@@ -49,6 +52,11 @@ package vhdlib_package is
   pure function prim_elem_exp (exp      : integer;
                                gf_poly  : std_logic_vector)
     return std_logic_vector;
+
+  -- exponentiation of binary matrix
+  pure function bin_mat_exp (exp      : integer;
+                             bin_mat  : bin_matrix_t)
+    return bin_matrix_t;
 
 end package vhdlib_package;
 
@@ -163,5 +171,31 @@ package body vhdlib_package is
   begin
     return single_bit_poly_div(exp+1, gf_poly);
   end function prim_elem_exp;
+
+  --
+  -- Function     : bin_mat_exp
+  --
+  -- Description  : Calculates the nth power of a quadratic,
+  --                binary matrix.
+  --
+  -- Input        :
+  --  exp         : The power of the exponentiation.
+  --  bin_mat     : The quadratic, binary matrix.
+  --
+  -- Output       : A binary matrix of size equal to bin_mat.
+  --
+  pure function bin_mat_exp (exp      : integer;
+                             bin_mat  : bin_matrix_t)
+    return bin_matrix_t is
+    variable ret_mat  : bin_matrix_t(bin_mat'range, bin_mat'range);
+  begin
+    ret_mat := (OTHERS => (OTHERS => '0'));
+    for i in bin_mat'range loop
+      for j in bin_mat'range loop
+        ret_mat(i,j)  := ret_mat(i,j) XOR (bin_mat(i,j) AND bin_mat(j,i));
+      end loop;
+    end loop;
+    return ret_mat;
+  end function bin_mat_exp;
 
 end package body vhdlib_package;

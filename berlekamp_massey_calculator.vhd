@@ -23,14 +23,14 @@ entity berlekamp_massey_calculator is
 end entity;
 
 architecture rtl of berlekamp_massey_calculator is
-  constant M  : integer := GF_POLYNOMIAL'length-1;
+  constant M              : integer := GF_POLYNOMIAL'length-1;
 
-  subtype gf_elem is std_logic_vector(M-1 downto 0);
-  type gf_array_desc_t is array(2*CORRECTABLE_ERR-1 downto 0) of gf_elem;
+  subtype gf_elem         is std_logic_vector(M-1 downto 0);
+  type gf_array_desc_t    is array(2*CORRECTABLE_ERR-1 downto 0) of gf_elem;
   type calculator_state_t is (IDLE, CALCULATING);
 
-  constant GF_ZERO  : gf_elem := (OTHERS => '0');
-  constant GF_ONE   : gf_elem := (0 => '1', OTHERS => '0');
+  constant GF_ZERO        : gf_elem := (OTHERS => '0');
+  constant GF_ONE         : gf_elem := (0 => '1', OTHERS => '0');
 
   -- TODO: give reasonable names to signals
   signal L                : integer range 0 to 2*CORRECTABLE_ERR;

@@ -9,10 +9,10 @@ use work.vhdlib_package.all;
 
 entity syndrome_calculator is
   generic (
-    GF_POLYNOMIAL   : std_logic_vector := G709_GF_POLY; -- irreducible, binary polynomial
-    SYMBOL_WIDTH    : integer := 8;
-    NO_OF_SYMBOLS   : integer := 10;
-    NO_OF_SYNDROMES : integer := 6
+    GF_POLYNOMIAL   : std_logic_vector  := G709_GF_POLY; -- irreducible, binary polynomial
+    SYMBOL_WIDTH    : integer           := 8;
+    NO_OF_SYMBOLS   : integer           := 10;
+    NO_OF_SYNDROMES : integer           := 6
   );
   port (
     clk             : in  std_logic;
@@ -26,13 +26,13 @@ entity syndrome_calculator is
 end entity;
 
 architecture rtl of syndrome_calculator is
-  constant M  : integer := GF_POLYNOMIAL'length-1;
+  constant M            : integer := GF_POLYNOMIAL'length-1;
 
-  subtype gf_elem is std_logic_vector(M-1 downto 0);
-  type connections_t is array(1 to NO_OF_SYNDROMES, 1 to NO_OF_SYMBOLS) of gf_elem;
-  type gf_elements_t is array(1 to NO_OF_SYNDROMES) of gf_elem;
+  subtype gf_elem       is std_logic_vector(M-1 downto 0);
+  type connections_t    is array(1 to NO_OF_SYNDROMES, 1 to NO_OF_SYMBOLS) of gf_elem;
+  type gf_elements_t    is array(1 to NO_OF_SYNDROMES) of gf_elem;
 
-  constant GF_ZERO  : gf_elem := (OTHERS => '0');
+  constant GF_ZERO      : gf_elem := (OTHERS => '0');
 
   signal connections    : connections_t;
   signal syndrome_regs  : gf_elements_t;
@@ -54,9 +54,9 @@ begin
             SYMBOL_WIDTH  => SYMBOL_WIDTH
           )
           port map (
-            symbol      => symbols(symbols'high downto symbols'length-SYMBOL_WIDTH),
-            product_in  => syndrome_wires(j),
-            product_out => connections(j,i+1)
+            symbol        => symbols(symbols'high downto symbols'length-SYMBOL_WIDTH),
+            product_in    => syndrome_wires(j),
+            product_out   => connections(j,i+1)
           );
       end generate gen_top_multipliers;
 
@@ -69,9 +69,9 @@ begin
             SYMBOL_WIDTH  => SYMBOL_WIDTH
           )
           port map (
-            symbol      => symbols(symbols'high-i*SYMBOL_WIDTH downto symbols'length-(i+1)*SYMBOL_WIDTH),
-            product_in  => connections(j,i),
-            product_out => connections(j,i+1)
+            symbol        => symbols(symbols'high-i*SYMBOL_WIDTH downto symbols'length-(i+1)*SYMBOL_WIDTH),
+            product_in    => connections(j,i),
+            product_out   => connections(j,i+1)
           );
       end generate gen_rest_of_multipliers;
     end generate gen_symbols;
