@@ -53,7 +53,13 @@ package vhdlib_package is
                                gf_poly  : std_logic_vector)
     return std_logic_vector;
 
+  -- multiplication of binary matrix
+  pure function bin_mat_multiply  (bin_mat_a  : bin_matrix_t;
+                                   bin_mat_b  : bin_matrix_t)
+    return bin_matrix_t;
+
   -- exponentiation of binary matrix
+  -- TODO: not in use currently; remove?
   pure function bin_mat_exp (exp      : integer;
                              bin_mat  : bin_matrix_t)
     return bin_matrix_t;
@@ -173,6 +179,40 @@ package body vhdlib_package is
   end function prim_elem_exp;
 
   --
+  -- Function     : bin_mat_multiply
+  --
+  -- Description  : Multiplies to binary matrices.
+  --
+  -- Input        :
+  --  bin_mat_a   : A binary matrix.
+  --  bin_mat_b   : A binary matrix.
+  --
+  -- Output       : A binary matrix of size equal first dimension of
+  --                bin_mat_a and second dimension of bin_mat_b.
+  --
+  pure function bin_mat_multiply  (bin_mat_a  : bin_matrix_t;
+                                   bin_mat_b  : bin_matrix_t)
+    return bin_matrix_t is
+    variable ret_mat  : bin_matrix_t(bin_mat_a'range(1), bin_mat_b'range(2));
+  begin
+    assert bin_mat_a'length(2) = bin_mat_b'length(1)
+      report "Dimensions of matrices to multiply do not match!"
+      severity failure;
+
+    ret_mat := (OTHERS => (OTHERS => '0'));
+
+    for k in bin_mat_a'range(1) loop
+      for i in bin_mat_a'range(2) loop
+        for j in bin_mat_b'range(2) loop
+          ret_mat(k,i)  := bin_mat_a(k,j) AND bin_mat_b(j,i);
+        end loop;
+      end loop;
+    end loop;
+
+    return ret_mat;
+  end function bin_mat_multiply;
+
+  --
   -- Function     : bin_mat_exp
   --
   -- Description  : Calculates the nth power of a quadratic,
@@ -189,12 +229,13 @@ package body vhdlib_package is
     return bin_matrix_t is
     variable ret_mat  : bin_matrix_t(bin_mat'range, bin_mat'range);
   begin
-    ret_mat := (OTHERS => (OTHERS => '0'));
-    for i in bin_mat'range loop
-      for j in bin_mat'range loop
-        ret_mat(i,j)  := ret_mat(i,j) XOR (bin_mat(i,j) AND bin_mat(j,i));
-      end loop;
+    ret_mat := bin_mat;
+
+    -- if exp < 2 just return input matrix
+    for e in 2 to exp loop
+      ret_mat := bin_mat_multiply(ret_mat, bin_mat);
     end loop;
+
     return ret_mat;
   end function bin_mat_exp;
 
