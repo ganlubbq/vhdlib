@@ -52,14 +52,14 @@ architecture rtl of prbs_gen_par is
     prbs_mat  := gen_prbs_matrix;
     tmp_mat   := prbs_mat;
 
-    for i in 1 to DATA_WIDTH loop
-      -- incremental exponentiation of PRBS output matrix
-      tmp_mat := bin_mat_multiply(tmp_mat,prbs_mat);
-
+    for i in 0 to DATA_WIDTH-1 loop
       -- copy leftmost column from tmp_mat to the rightmost, _EMPTY_ column in ret_mat
       for j in 0 to M-1 loop
-        ret_mat(j,i-1)  := tmp_mat(j,0);
+        ret_mat(j,i)  := tmp_mat(j,0);
       end loop;
+
+      -- incremental exponentiation of PRBS output matrix
+      tmp_mat := bin_mat_multiply(tmp_mat,prbs_mat);
     end loop;
 
     return ret_mat;
@@ -69,8 +69,8 @@ architecture rtl of prbs_gen_par is
 
 begin
 
-  assert POLYNOMIAL'length-1 >= DATA_WIDTH
-    report "Input data width is too small to determine PRBS state!"
+  assert POLYNOMIAL'length-1 <= DATA_WIDTH
+    report "Input data width is too small to determine PRBS generator state!"
     severity failure;
 
   -- PRBS output from gating PRBS input XOR matrix and input signal

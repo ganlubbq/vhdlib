@@ -204,7 +204,7 @@ package body vhdlib_package is
     for k in bin_mat_a'range(1) loop
       for i in bin_mat_a'range(2) loop
         for j in bin_mat_b'range(2) loop
-          ret_mat(k,i)  := bin_mat_a(k,j) AND bin_mat_b(j,i);
+          ret_mat(k,i)  := ret_mat(k,i) XOR (bin_mat_a(k,j) AND bin_mat_b(j,i));
         end loop;
       end loop;
     end loop;
