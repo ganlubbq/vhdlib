@@ -15,24 +15,24 @@ entity syndrome_calculator is
     NO_OF_SYNDROMES : integer           := 6
   );
   port (
-    clk             : in  std_logic;
-    rst             : in  std_logic;
-    en              : in  std_logic;
-    new_calc        : in  std_logic;
-    symbols         : in  std_logic_vector(SYMBOL_WIDTH*NO_OF_SYMBOLS-1 downto 0);                -- highest order symbol on MSBs, descending
-    syndromes_in    : in  std_logic_vector(NO_OF_SYNDROMES*(GF_POLYNOMIAL'length-1)-1 downto 0);  -- lowest order syndrome on MSBs, ascending
-    syndromes_out   : out std_logic_vector(NO_OF_SYNDROMES*(GF_POLYNOMIAL'length-1)-1 downto 0)   -- lowest order syndrome on MSBs, ascending
+    clk           : in  std_logic;
+    rst           : in  std_logic;
+    en            : in  std_logic;
+    new_calc      : in  std_logic;
+    symbols       : in  std_logic_vector(SYMBOL_WIDTH*NO_OF_SYMBOLS-1 downto 0);                -- highest order symbol on MSBs, descending
+    syndromes_in  : in  std_logic_vector(NO_OF_SYNDROMES*(GF_POLYNOMIAL'length-1)-1 downto 0);  -- lowest order syndrome on MSBs, ascending
+    syndromes_out : out std_logic_vector(NO_OF_SYNDROMES*(GF_POLYNOMIAL'length-1)-1 downto 0)   -- lowest order syndrome on MSBs, ascending
   );
 end entity;
 
 architecture rtl of syndrome_calculator is
-  constant M            : integer := GF_POLYNOMIAL'length-1;
+  constant M  : integer := GF_POLYNOMIAL'length-1;
 
-  subtype gf_elem       is std_logic_vector(M-1 downto 0);
-  type connections_t    is array(1 to NO_OF_SYNDROMES, 1 to NO_OF_SYMBOLS) of gf_elem;
-  type gf_elements_t    is array(1 to NO_OF_SYNDROMES) of gf_elem;
+  subtype gf_elem     is std_logic_vector(M-1 downto 0);
+  type connections_t  is array(1 to NO_OF_SYNDROMES, 1 to NO_OF_SYMBOLS) of gf_elem;
+  type gf_elements_t  is array(1 to NO_OF_SYNDROMES) of gf_elem;
 
-  constant GF_ZERO      : gf_elem := (OTHERS => '0');
+  constant GF_ZERO  : gf_elem := (OTHERS => '0');
 
   signal connections    : connections_t;
   signal syndrome_regs  : gf_elements_t;
@@ -54,9 +54,9 @@ begin
             SYMBOL_WIDTH  => SYMBOL_WIDTH
           )
           port map (
-            symbol        => symbols(symbols'high downto symbols'length-SYMBOL_WIDTH),
-            product_in    => syndrome_wires(j),
-            product_out   => connections(j,i+1)
+            symbol      => symbols(symbols'high downto symbols'length-SYMBOL_WIDTH),
+            product_in  => syndrome_wires(j),
+            product_out => connections(j,i+1)
           );
       end generate gen_top_multipliers;
 
@@ -69,9 +69,9 @@ begin
             SYMBOL_WIDTH  => SYMBOL_WIDTH
           )
           port map (
-            symbol        => symbols(symbols'high-i*SYMBOL_WIDTH downto symbols'length-(i+1)*SYMBOL_WIDTH),
-            product_in    => connections(j,i),
-            product_out   => connections(j,i+1)
+            symbol      => symbols(symbols'high-i*SYMBOL_WIDTH downto symbols'length-(i+1)*SYMBOL_WIDTH),
+            product_in  => connections(j,i),
+            product_out => connections(j,i+1)
           );
       end generate gen_rest_of_multipliers;
     end generate gen_symbols;

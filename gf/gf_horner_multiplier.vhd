@@ -15,9 +15,9 @@ entity gf_horner_multiplier is
     SYMBOL_WIDTH  : integer           := 8              -- size of codeword coefficients
   );
   port (
-    symbol        : in  std_logic_vector(SYMBOL_WIDTH-1 downto 0);
-    product_in    : in  std_logic_vector(GF_POLYNOMIAL'length-2 downto 0);
-    product_out   : out std_logic_vector(GF_POLYNOMIAL'length-2 downto 0)
+    symbol      : in  std_logic_vector(SYMBOL_WIDTH-1 downto 0);
+    product_in  : in  std_logic_vector(GF_POLYNOMIAL'length-2 downto 0);
+    product_out : out std_logic_vector(GF_POLYNOMIAL'length-2 downto 0)
   );
 end entity;
 
@@ -33,12 +33,12 @@ begin
 
   gf_mul : entity work.gf_multiplier(rtl)
     generic map (
-      GF_POLYNOMIAL  => GF_POLYNOMIAL
+      GF_POLYNOMIAL => GF_POLYNOMIAL
     )
     port map (
-      mul_a       => PRIM_ELEM,
-      mul_b       => product_in,
-      product     => product
+      mul_a   => PRIM_ELEM,
+      mul_b   => product_in,
+      product => product
     );
 
   pad_proc : process (symbol)

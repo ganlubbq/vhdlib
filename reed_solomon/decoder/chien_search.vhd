@@ -14,14 +14,14 @@ entity chien_search is
     CORRECTABLE_ERR : integer := 3
   );
   port (
-    clk                 : in  std_logic;
-    rst                 : in  std_logic;
-    new_calc            : in  std_logic;
-    err_locator_in      : in  std_logic_vector(2*CORRECTABLE_ERR*(GF_POLYNOMIAL'length-1)-1 downto 0);   -- highest order coefficient at MSBs, descending
-    ready               : out std_logic;
-    err_roots_out       : out std_logic_vector(CORRECTABLE_ERR*(GF_POLYNOMIAL'length-1)-1 downto 0);
-    err_locations_out   : out std_logic_vector(CORRECTABLE_ERR*(GF_POLYNOMIAL'length-1)-1 downto 0);
-    bit_locations_out   : out std_logic_vector(CORRECTABLE_ERR*(GF_POLYNOMIAL'length-1)-1 downto 0)
+    clk               : in  std_logic;
+    rst               : in  std_logic;
+    new_calc          : in  std_logic;
+    err_locator_in    : in  std_logic_vector(2*CORRECTABLE_ERR*(GF_POLYNOMIAL'length-1)-1 downto 0);   -- highest order coefficient at MSBs, descending
+    ready             : out std_logic;
+    err_roots_out     : out std_logic_vector(CORRECTABLE_ERR*(GF_POLYNOMIAL'length-1)-1 downto 0);
+    err_locations_out : out std_logic_vector(CORRECTABLE_ERR*(GF_POLYNOMIAL'length-1)-1 downto 0);
+    bit_locations_out : out std_logic_vector(CORRECTABLE_ERR*(GF_POLYNOMIAL'length-1)-1 downto 0)
   );
 end entity;
 

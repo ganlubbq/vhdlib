@@ -15,9 +15,9 @@ entity berlekamp_massey_calculator is
   port (
     clk             : in  std_logic;
     rst             : in  std_logic;
-    new_calc        : in  std_logic;
+    new_calc        : in  std_logic;                                                                -- when '1' a new calculation is started with the given syndromes
     syndromes_in    : in  std_logic_vector(2*CORRECTABLE_ERR*(GF_POLYNOMIAL'length-1)-1 downto 0);  -- lowest order syndrome at MSBs, ascending
-    ready           : out std_logic;
+    ready           : out std_logic;                                                                -- when '1' the calculated error locator is ready
     err_locator_out : out std_logic_vector(2*CORRECTABLE_ERR*(GF_POLYNOMIAL'length-1)-1 downto 0)   -- highest order coefficient at MSBs, descending
   );
 end entity;
@@ -33,24 +33,24 @@ architecture rtl of berlekamp_massey_calculator is
   constant GF_ONE         : gf_elem := (0 => '1', OTHERS => '0');
 
   -- TODO: give reasonable names to signals
-  signal L                : integer range 0 to 2*CORRECTABLE_ERR;
+  signal L                : integer range 0 to 2*CORRECTABLE_ERR; -- current number of assumed errors
   signal n                : integer range 0 to 2*CORRECTABLE_ERR;
   signal k                : integer range 1 to 2*CORRECTABLE_ERR;
-  signal d                : gf_elem;
+  signal d                : gf_elem;          -- discrepancy
   signal d_mul_a_inputs   : gf_array_desc_t;
   signal d_mul_b_inputs   : gf_array_desc_t;
   signal d_mul_outputs    : gf_array_desc_t;
-  signal b                : gf_elem;
-  signal b_inv            : gf_elem;
+  signal d_prev           : gf_elem;          -- previous value of discrepancy
+  signal d_prev_inv       : gf_elem;          -- inverse of d_prev
   signal inv_mux          : gf_elem;
-  signal use_b_inv        : std_logic;
-  signal d_inv            : gf_elem;
-  signal d_b_inv          : gf_elem;
+  signal use_d_prev_inv   : std_logic;        -- when '1' use d_prev_inv for next calculation step, else use d_inv
+  signal d_inv            : gf_elem;          -- inverse of d
+  signal d_d_prev_inv     : gf_elem;
   signal cx               : gf_array_desc_t;
-  signal cx_new           : gf_array_desc_t;
-  signal cx_adj_a_inputs  : gf_array_desc_t;
+  signal cx_new           : gf_array_desc_t;  -- cx_new = cx - d_d_prev_inv * cx_prev
+  signal cx_adj_inputs    : gf_array_desc_t;
   signal cx_adj_outputs   : gf_array_desc_t;
-  signal bx               : gf_array_desc_t;
+  signal cx_prev          : gf_array_desc_t;
   signal syndromes        : gf_array_desc_t;
   signal calculator_state : calculator_state_t;
 
@@ -64,12 +64,12 @@ begin
   begin
     discrepancy_multiplier : entity work.gf_multiplier(rtl)
       generic map (
-        GF_POLYNOMIAL   => GF_POLYNOMIAL
+        GF_POLYNOMIAL => GF_POLYNOMIAL
       )
       port map (
-        mul_a           => d_mul_a_inputs(i),
-        mul_b           => d_mul_b_inputs(i),
-        product         => d_mul_outputs(i)
+        mul_a   => d_mul_a_inputs(i),
+        mul_b   => d_mul_b_inputs(i),
+        product => d_mul_outputs(i)
       );
   end generate discrepancy_multipliers;
 
@@ -77,45 +77,45 @@ begin
   begin
     cx_adjustment_multiplier : entity work.gf_multiplier(rtl)
       generic map (
-        GF_POLYNOMIAL   => GF_POLYNOMIAL
+        GF_POLYNOMIAL => GF_POLYNOMIAL
       )
       port map (
-        mul_a           => cx_adj_a_inputs(i),
-        mul_b           => d_b_inv,
-        product         => cx_adj_outputs(i)
+        mul_a   => cx_adj_inputs(i),
+        mul_b   => d_d_prev_inv,
+        product => cx_adj_outputs(i)
       );
   end generate cx_adjustment_multipliers;
 
   d_b_inv_multiplier : entity work.gf_multiplier(rtl)
     generic map (
-      GF_POLYNOMIAL   => GF_POLYNOMIAL
+      GF_POLYNOMIAL => GF_POLYNOMIAL
     )
     port map (
-      mul_a           => d,
-      mul_b           => inv_mux,
-      product         => d_b_inv
+      mul_a   => d,
+      mul_b   => inv_mux,
+      product => d_d_prev_inv
     );
 
-  inverse_b_table : entity work.gf_lookup_table(rtl)
+  inverse_d_prev_table : entity work.gf_lookup_table(rtl)
     generic map (
-      GF_POLYNOMIAL   => GF_POLYNOMIAL,
-      TABLE_TYPE      => INV_TABLE_TYPE
+      GF_POLYNOMIAL => GF_POLYNOMIAL,
+      TABLE_TYPE    => INV_TABLE_TYPE
     )
     port map (
-      clk             => clk,
-      elem_in         => b,
-      elem_out        => b_inv -- TODO: doesn't work
+      clk       => clk,
+      elem_in   => d_prev,
+      elem_out  => d_prev_inv
     );
 
-  inverse_b_new_table : entity work.gf_lookup_table(rtl)
+  inverse_d_table : entity work.gf_lookup_table(rtl)
     generic map (
-      GF_POLYNOMIAL   => GF_POLYNOMIAL,
-      TABLE_TYPE      => INV_TABLE_TYPE
+      GF_POLYNOMIAL => GF_POLYNOMIAL,
+      TABLE_TYPE    => INV_TABLE_TYPE
     )
     port map (
-      clk             => clk,
-      elem_in         => d,
-      elem_out        => d_inv
+      clk       => clk,
+      elem_in   => d,
+      elem_out  => d_inv
     );
 
   ---------------
@@ -125,13 +125,13 @@ begin
   clk_proc : process(clk, rst)
   begin
     if rst = '1' then
-      use_b_inv         <= '0';
+      use_d_prev_inv    <= '0';
       L                 <= 0;
       n                 <= 0;
       k                 <= 1;
-      b                 <= GF_ONE;
+      d_prev            <= GF_ONE;
       cx                <= (0 => GF_ONE, OTHERS => GF_ZERO);
-      bx                <= (0 => GF_ONE, OTHERS => GF_ZERO);
+      cx_prev           <= (0 => GF_ONE, OTHERS => GF_ZERO);
       syndromes         <= (OTHERS => GF_ZERO);
 
       calculator_state  <= IDLE;
@@ -141,7 +141,7 @@ begin
 
       -- preassignments
       ready           <= '0';
-      use_b_inv       <= '1';
+      use_d_prev_inv  <= '1';
 
       if calculator_state = CALCULATING then
         -- increment iterator and cycle syndromes 1 to the left
@@ -149,20 +149,19 @@ begin
         syndromes(0)  <= syndromes(syndromes'high(1));
         syndromes(syndromes'high(1) downto 1) <= syndromes(syndromes'high(1)-1 downto 0);
 
-
         -- evaluate newly calculated discrepancy
         if d = GF_ZERO then
-          k         <= k + 1;
+          k               <= k + 1;
         elsif 2*L <= n then
-          bx        <= cx;
-          L         <= n + 1 - L;
-          b         <= d;
-          cx        <= cx_new;
-          k         <= 1;
-          use_b_inv <= '0';
+          cx_prev         <= cx;
+          L               <= n + 1 - L;
+          d_prev          <= d;
+          cx              <= cx_new;
+          k               <= 1;
+          use_d_prev_inv  <= '0';
         else
-          cx        <= cx_new;
-          k         <= k + 1;
+          cx              <= cx_new;
+          k               <= k + 1;
         end if;
 
         -- check if iteration is over
@@ -173,12 +172,12 @@ begin
 
       -- if new input is given then reset algorithm
       if new_calc = '1' then
-        L                 <= 0;
-        n                 <= 0;
-        k                 <= 1;
-        b                 <= GF_ONE;
-        cx                <= (0 => GF_ONE, OTHERS => GF_ZERO);
-        bx                <= (0 => GF_ONE, OTHERS => GF_ZERO);
+        L       <= 0;
+        n       <= 0;
+        k       <= 1;
+        d_prev  <= GF_ONE;
+        cx      <= (0 => GF_ONE, OTHERS => GF_ZERO);
+        cx_prev <= (0 => GF_ONE, OTHERS => GF_ZERO);
 
         -- read in syndromes so they are ascending but shifted 1 to the left
         for i in syndromes'high(1) downto 1 loop
@@ -207,12 +206,12 @@ begin
                         syndromes,
                         L,
                         k,
-                        bx,
+                        cx_prev,
                         cx,
-                        cx_adj_a_inputs,
+                        cx_adj_inputs,
                         cx_adj_outputs,
-                        use_b_inv,
-                        b_inv,
+                        use_d_prev_inv,
+                        d_prev_inv,
                         d_inv
                       )
     variable var_d        : gf_elem;
@@ -235,10 +234,10 @@ begin
     end loop;
 
     -- set inputs for C(x) adjustment multipliers
-    cx_adj_a_inputs <= (OTHERS => GF_ZERO);
-    for i in bx'range(1) loop
-      if i < bx'high(1)-k then
-        cx_adj_a_inputs(k+i) <= bx(i);
+    cx_adj_inputs <= (OTHERS => GF_ZERO);
+    for i in cx_prev'range(1) loop
+      if i < cx_prev'high(1)-k then
+        cx_adj_inputs(k+i) <= cx_prev(i);
       end if;
     end loop;
 
@@ -254,8 +253,8 @@ begin
       cx_new(i) <= cx(i) XOR cx_adj_outputs(i);
     end loop;
 
-    if use_b_inv = '1' then
-      inv_mux <= b_inv;
+    if use_d_prev_inv = '1' then
+      inv_mux <= d_prev_inv;
     else
       inv_mux <= d_inv;
     end if;

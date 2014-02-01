@@ -49,7 +49,7 @@ package vhdlib_package is
     return std_logic_vector;
 
   -- exponentiation of primitive GF(2^M) element
-  pure function prim_elem_exp (exp      : integer;
+  pure function prim_elem_exp (n        : integer;
                                gf_poly  : std_logic_vector)
     return std_logic_vector;
 
@@ -60,7 +60,7 @@ package vhdlib_package is
 
   -- exponentiation of binary matrix
   -- TODO: not in use currently; remove?
-  pure function bin_mat_exp (exp      : integer;
+  pure function bin_mat_exp (n        : integer;
                              bin_mat  : bin_matrix_t)
     return bin_matrix_t;
 
@@ -88,7 +88,7 @@ package body vhdlib_package is
 
     variable r : std_logic;
   begin
-    r   := '0';
+    r := '0';
     for i in slv'range loop
       r := slv(i) XOR r;
     end loop;
@@ -165,29 +165,29 @@ package body vhdlib_package is
   --                element from GF(2^M).
   --
   -- Input        :
-  --  exp         : The power of the primitive element.
+  --  n           : The power of the primitive element.
   --  gf_poly     : Irreducible polynomial used to construct GF(2^M).
   --
   -- Output       : An element from GF(2^M) that is the nth power of
   --                the primitive element.
   --
-  pure function prim_elem_exp (exp      : integer;
+  pure function prim_elem_exp (n        : integer;
                                gf_poly  : std_logic_vector)
     return std_logic_vector is
   begin
-    return single_bit_poly_div(exp+1, gf_poly);
+    return single_bit_poly_div(n+1, gf_poly);
   end function prim_elem_exp;
 
   --
   -- Function     : bin_mat_multiply
   --
-  -- Description  : Multiplies to binary matrices.
+  -- Description  : Multiplies two binary matrices.
   --
   -- Input        :
   --  bin_mat_a   : A binary matrix.
   --  bin_mat_b   : A binary matrix.
   --
-  -- Output       : A binary matrix of size equal first dimension of
+  -- Output       : A binary matrix of size equal to first dimension of
   --                bin_mat_a and second dimension of bin_mat_b.
   --
   pure function bin_mat_multiply  (bin_mat_a  : bin_matrix_t;
@@ -219,20 +219,20 @@ package body vhdlib_package is
   --                binary matrix.
   --
   -- Input        :
-  --  exp         : The power of the exponentiation.
+  --  n           : The power of the exponentiation.
   --  bin_mat     : The quadratic, binary matrix.
   --
   -- Output       : A binary matrix of size equal to bin_mat.
   --
-  pure function bin_mat_exp (exp      : integer;
+  pure function bin_mat_exp (n        : integer;
                              bin_mat  : bin_matrix_t)
     return bin_matrix_t is
     variable ret_mat  : bin_matrix_t(bin_mat'range, bin_mat'range);
   begin
     ret_mat := bin_mat;
 
-    -- if exp < 2 just return input matrix
-    for e in 2 to exp loop
+    -- if n < 2 just return input matrix
+    for e in 2 to n loop
       ret_mat := bin_mat_multiply(ret_mat, bin_mat);
     end loop;
 
