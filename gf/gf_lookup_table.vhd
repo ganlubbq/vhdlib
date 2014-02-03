@@ -36,7 +36,7 @@ architecture rtl of gf_lookup_table is
   begin
 
     if TABLE_TYPE = INV_TABLE_TYPE then
-      ret(0)        := (OTHERS => '0'); -- not defined
+      ret(0)        := (OTHERS => '0'); -- inverse of 0 not defined
       ret(1)        := std_logic_vector(to_unsigned(1,M)); -- 1 = 1*1
 
       -- iterate over powers of primitive element
@@ -47,7 +47,7 @@ architecture rtl of gf_lookup_table is
       end loop;
 
     elsif TABLE_TYPE = LOG_TABLE_TYPE then
-      ret(0)        := (OTHERS => '0'); -- not defined
+      ret(0)        := (OTHERS => '0'); -- logarithm of 0 not defined
 
       -- iterate over powers of primitive element
       for i in 0 to 2**M-2 loop

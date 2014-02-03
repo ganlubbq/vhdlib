@@ -30,7 +30,7 @@ architecture rtl of prbs_gen_par is
   begin
     ret_mat := (OTHERS => (OTHERS => '0'));
 
-    -- make first row equal to transposed PRBS polynomial (except for lowest order coefficient)
+    -- make first row equal to transposed PRBS polynomial vector (except for lowest order coefficient)
     for i in M-1 downto 0 loop
       ret_mat(i,0) := P(i+1);
     end loop;
