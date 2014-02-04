@@ -9,16 +9,16 @@ use work.vhdlib_package.all;
 
 entity berlekamp_massey_calculator is
   generic (
-    GF_POLYNOMIAL   : std_logic_vector := G709_GF_POLY; -- irreducible, binary polynomial
-    CORRECTABLE_ERR : integer := 3
+    GF_POLYNOMIAL   : std_logic_vector  := G709_GF_POLY; -- irreducible, binary polynomial
+    NO_OF_SYNDROMES : integer           := 6
   );
   port (
     clk             : in  std_logic;
     rst             : in  std_logic;
     new_calc        : in  std_logic;                                                                -- when '1' a new calculation is started with the given syndromes
-    syndromes_in    : in  std_logic_vector(2*CORRECTABLE_ERR*(GF_POLYNOMIAL'length-1)-1 downto 0);  -- lowest order syndrome at MSBs, ascending
+    syndromes_in    : in  std_logic_vector(NO_OF_SYNDROMES*(GF_POLYNOMIAL'length-1)-1 downto 0);  -- lowest order syndrome at MSBs, ascending
     ready           : out std_logic;                                                                -- when '1' the calculated error locator is ready
-    err_locator_out : out std_logic_vector(2*CORRECTABLE_ERR*(GF_POLYNOMIAL'length-1)-1 downto 0)   -- highest order coefficient at MSBs, descending
+    err_locator_out : out std_logic_vector(NO_OF_SYNDROMES*(GF_POLYNOMIAL'length-1)-1 downto 0)   -- highest order coefficient at MSBs, descending
   );
 end entity;
 
@@ -26,16 +26,16 @@ architecture rtl of berlekamp_massey_calculator is
   constant M              : integer := GF_POLYNOMIAL'length-1;
 
   subtype gf_elem         is std_logic_vector(M-1 downto 0);
-  type gf_array_desc_t    is array(2*CORRECTABLE_ERR-1 downto 0) of gf_elem;
+  type gf_array_desc_t    is array(NO_OF_SYNDROMES-1 downto 0) of gf_elem;
   type calculator_state_t is (IDLE, CALCULATING);
 
   constant GF_ZERO        : gf_elem := (OTHERS => '0');
   constant GF_ONE         : gf_elem := (0 => '1', OTHERS => '0');
 
   -- TODO: give reasonable names to signals
-  signal L                : integer range 0 to 2*CORRECTABLE_ERR; -- current number of assumed errors
-  signal n                : integer range 0 to 2*CORRECTABLE_ERR;
-  signal k                : integer range 1 to 2*CORRECTABLE_ERR;
+  signal L                : integer range 0 to NO_OF_SYNDROMES; -- current number of assumed errors
+  signal n                : integer range 0 to NO_OF_SYNDROMES;
+  signal k                : integer range 1 to NO_OF_SYNDROMES;
   signal d                : gf_elem;          -- discrepancy
   signal d_mul_a_inputs   : gf_array_desc_t;
   signal d_mul_b_inputs   : gf_array_desc_t;
@@ -165,7 +165,7 @@ begin
         end if;
 
         -- check if iteration is over
-        if n = 2*CORRECTABLE_ERR-1 then
+        if n = NO_OF_SYNDROMES-1 then
           calculator_state  <= IDLE;
         end if;
       end if;

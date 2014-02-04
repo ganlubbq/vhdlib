@@ -10,14 +10,15 @@ use work.vhdlib_package.all;
 
 entity chien_search is
   generic (
-    GF_POLYNOMIAL   : std_logic_vector := G709_GF_POLY; -- irreducible, binary polynomial
-    CORRECTABLE_ERR : integer := 3
+    GF_POLYNOMIAL   : std_logic_vector  := G709_GF_POLY; -- irreducible, binary polynomial
+    CORRECTABLE_ERR : integer           := 3;
+    NO_OF_SYNDROMES : integer           := 6
   );
   port (
     clk               : in  std_logic;
     rst               : in  std_logic;
     new_calc          : in  std_logic;
-    err_locator_in    : in  std_logic_vector(2*CORRECTABLE_ERR*(GF_POLYNOMIAL'length-1)-1 downto 0);  -- highest order coefficient at MSBs, descending
+    err_locator_in    : in  std_logic_vector(NO_OF_SYNDROMES*(GF_POLYNOMIAL'length-1)-1 downto 0);  -- highest order coefficient at MSBs, descending
     ready             : out std_logic;                                                                -- when '1' the error locations have can be read from signal err_locations_out
     err_roots_out     : out std_logic_vector(CORRECTABLE_ERR*(GF_POLYNOMIAL'length-1)-1 downto 0);
     err_locations_out : out std_logic_vector(CORRECTABLE_ERR*(GF_POLYNOMIAL'length-1)-1 downto 0);

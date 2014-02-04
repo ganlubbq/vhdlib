@@ -1,1 +1,4 @@
-sim/
+sim/work/
+sim/matlab/tmp/
+*.wlf
+*.asv

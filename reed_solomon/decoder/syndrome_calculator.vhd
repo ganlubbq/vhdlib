@@ -11,7 +11,7 @@ entity syndrome_calculator is
   generic (
     GF_POLYNOMIAL   : std_logic_vector  := G709_GF_POLY; -- irreducible, binary polynomial
     SYMBOL_WIDTH    : integer           := 8;
-    NO_OF_SYMBOLS   : integer           := 10;
+    NO_OF_SYMBOLS   : integer           := 3;
     NO_OF_SYNDROMES : integer           := 6
   );
   port (
