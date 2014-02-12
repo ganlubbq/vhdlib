@@ -32,39 +32,62 @@ architecture rtl of gf_lookup_table_dp is
 
   -- function to generate table contents
   function gen_table return table_t is
-    variable index_elem : std_logic_vector(M-1 downto 0);
-    variable value_elem : std_logic_vector(M-1 downto 0);
-    variable ret        : table_t;
+    variable index_elem     : std_logic_vector(M-1 downto 0);
+    variable value_elem     : std_logic_vector(M-1 downto 0);
+    variable tmp_log_table  : table_t;
+    variable ret            : table_t;
   begin
 
     if TABLE_TYPE = INV_TABLE_TYPE then
-      ret(0)        := (OTHERS => '0'); -- not defined
-      ret(1)        := std_logic_vector(to_unsigned(1,M)); -- 1 = 1*1
+      ret(0)  := (OTHERS => '0');                     -- inverse of 0 not defined
+      ret(1)  := std_logic_vector(to_unsigned(1,M));  -- 1 = 1*1
 
-      -- iterate over powers of primitive element
       for i in 1 to 2**M-2 loop
-        index_elem  := prim_elem_exp(i, GF_POLYNOMIAL);
-        value_elem  := prim_elem_exp(2**M-1-i, GF_POLYNOMIAL);
-        ret(to_integer(unsigned(index_elem))) := value_elem;
+        index_elem  := prim_elem_exp(i, GF_POLYNOMIAL);         -- alpha^i
+        value_elem  := prim_elem_exp(2**M-1-i, GF_POLYNOMIAL);  -- alpha^(2^M-1-i)
+        ret(to_integer(unsigned(index_elem))) := value_elem;    -- alpha^i -> alpha^(2^M-1-i)
       end loop;
+    end if;
 
-    elsif TABLE_TYPE = LOG_TABLE_TYPE then
-      ret(0)        := (OTHERS => '0'); -- not defined
+    if TABLE_TYPE = LOG_TABLE_TYPE then
+      ret(0)  := (OTHERS => '0'); -- logarithm of 0 not defined
 
-      -- iterate over powers of primitive element
       for i in 0 to 2**M-2 loop
-        index_elem  := prim_elem_exp(i, GF_POLYNOMIAL);
-        value_elem  := std_logic_vector(to_unsigned(i,M));
-        ret(to_integer(unsigned(index_elem))) := value_elem;
+        index_elem  := prim_elem_exp(i, GF_POLYNOMIAL);       -- alpha^i
+        value_elem  := std_logic_vector(to_unsigned(i,M));    -- i
+        ret(to_integer(unsigned(index_elem))) := value_elem;  -- alpha^i -> i
+      end loop;
+    end if;
+
+    if TABLE_TYPE = EXP_TABLE_TYPE then
+      for i in 0 to 2**M-1 loop
+        index_elem  := std_logic_vector(to_unsigned(i,M));    -- i
+        value_elem  := prim_elem_exp(i, GF_POLYNOMIAL);       -- alpha^i
+        ret(to_integer(unsigned(index_elem))) := value_elem;  -- i -> alpha^i
+      end loop;
+    end if;
+
+    if TABLE_TYPE = ZECH_LOG_TABLE_TYPE then
+      -- first generate temporary logarithm table
+      tmp_log_table(0)  := (OTHERS => '0'); -- logarithm of 0 not defined
+
+      for i in 0 to 2**M-2 loop
+        index_elem  := prim_elem_exp(i, GF_POLYNOMIAL);                 -- alpha^i
+        value_elem  := std_logic_vector(to_unsigned(i,M));              -- i
+        tmp_log_table(to_integer(unsigned(index_elem))) := value_elem;  -- alpha^i -> i
       end loop;
 
-    elsif TABLE_TYPE = EXP_TABLE_TYPE then
+      -- now generate the actual Zech's logarithm table
+      ret(0)      := (OTHERS => '1'); -- Z(0) = -infinity
+      ret(2**M-1) := (OTHERS => '0'); -- Z(-infinity) = 0
 
-      -- iterate over powers of primitive element
-      for i in 0 to 2**M-1 loop
-        index_elem  := std_logic_vector(to_unsigned(i,M));
-        value_elem  := prim_elem_exp(i, GF_POLYNOMIAL);
-        ret(to_integer(unsigned(index_elem))) := value_elem;
+      -- calculate alpha^i + 1 and look up log(alpha^i + 1) in the temporary table
+      for i in 1 to 2**M-2 loop
+        index_elem    := std_logic_vector(to_unsigned(i,M));              -- i
+        value_elem    := prim_elem_exp(i, GF_POLYNOMIAL);                 -- alpha^i
+        value_elem(0) := value_elem(0) xor '1';                           -- alpha^i + 1
+        value_elem    := tmp_log_table(to_integer(unsigned(value_elem))); -- log(alpha^i + 1)
+        ret(to_integer(unsigned(index_elem))) := value_elem;              -- i -> log(alpha^i + 1)
       end loop;
     end if;
 

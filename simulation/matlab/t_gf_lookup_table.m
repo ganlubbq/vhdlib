@@ -2,7 +2,7 @@ clc;
 
 file = fopen('../t_gf_lookup_table.txt','w');
 
-mode = 3; % 1 = inverse, 2 = logarithm, 3 = exponentiation
+mode = 4; % 1 = inverse, 2 = logarithm, 3 = exponentiation, 4 = Zech's logarithm
 gf_poly = 19;
 m = floor(log2(gf_poly));
 
@@ -16,13 +16,21 @@ for i=0:10
     elseif mode == 2
         e = randi([0,2^m-2]);
         gfa = a^e;
-        gfb = gf(e,m,gf_poly);
-        fprintf(file,'%i %i\n',gfa.x, gfb.x);
+        gfb = e;
+        fprintf(file,'%i %i\n',gfa.x, gfb);
     elseif mode == 3
         e = randi([0,2^m-2]);
-        gfa = gf(e,m,gf_poly);
+        gfa = e;
         gfb = a^e;
-        fprintf(file,'%i %i\n',gfa.x, gfb.x);
+        fprintf(file,'%i %i\n',gfa, gfb.x);
+    elseif mode == 4
+        e = randi([1,2^m-2]);
+        gfa = gf(1,m,gf_poly)+a^e;
+        for j=1:2^m-1
+            if a^j == gfa
+                fprintf(file,'%i %i\n',e,j);
+            end
+        end
     end
 end
 fclose(file);
