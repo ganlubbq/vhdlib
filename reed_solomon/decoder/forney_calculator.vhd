@@ -1,30 +1,31 @@
----------------------------
--- Error value evaluator --
----------------------------
+------------------------------------------------------------
+-- Forney's algorithm calculator for finding error-values --
+------------------------------------------------------------
 library ieee;
 use ieee.std_logic_1164.all;
 
 library work;
 use work.vhdlib_package.all;
 
-entity error_value_evaluator is
+entity forney_calculator is
   generic (
     GF_POLYNOMIAL   : std_logic_vector  := G709_GF_POLY; -- irreducible, binary polynomial
+    CORRECTABLE_ERR : integer           := 3,
     NO_OF_SYNDROMES : integer           := 6
   );
   port (
     clk             : in  std_logic;
     rst             : in  std_logic;
     new_calc        : in  std_logic;
-    syndromes_in    : in  std_logic_vector(NO_OF_SYNDROMES*(GF_POLYNOMIAL'length-1)-1 downto 0);  -- lowest order syndrome at MSBs, ascending
-    err_locator_in  : in  std_logic_vector(NO_OF_SYNDROMES*(GF_POLYNOMIAL'length-1)-1 downto 0);  -- highest order coefficient at MSBs, descending
-    ready           : out std_logic;
-    err_eval_out    : out std_logic_vector(NO_OF_SYNDROMES*(GF_POLYNOMIAL'length-1)-1 downto 0)   -- highest order coefficient at MSBs, descending
+    err_roots_in    : in  std_logic_vector(CORRECTABLE_ERR*(GF_POLYNOMIAL'length-1)-1 downto 0);  -- highest order coefficient at MSBs, descending
+    err_eval_in     : in  std_logic_vector(CORRECTABLE_ERR*(GF_POLYNOMIAL'length-1)-1 downto 0);  -- highest order coefficient at MSBs, descending
+    err_values_out  : out std_logic_vector(CORRECTABLE_ERR*(GF_POLYNOMIAL'length-1)-1 downto 0);  -- highest order coefficient at MSBs, descending
+    ready           : out std_logic
   );
 end entity;
 
-architecture rtl of error_value_evaluator is
-  constant M                : integer := GF_POLYNOMIAL'length-1;
+architecture rtl of forney_calculator is
+  constant M  : integer := GF_POLYNOMIAL'length-1;
 
   subtype gf_elem is std_logic_vector(M-1 downto 0);
   type gf_array_desc_t is array(NO_OF_SYNDROMES-1 downto 0) of gf_elem;
@@ -57,9 +58,9 @@ begin
         GF_POLYNOMIAL => GF_POLYNOMIAL
       )
       port map (
-        mul_a   => syndromes(i),
-        mul_b   => err_locator(i),
-        product => mul_outputs(i)
+        mul_a         => syndromes(i),
+        mul_b         => err_locator(i),
+        product       => mul_outputs(i)
       );
   end generate multipliers;
 

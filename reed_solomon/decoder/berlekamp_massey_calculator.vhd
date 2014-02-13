@@ -32,7 +32,6 @@ architecture rtl of berlekamp_massey_calculator is
   constant GF_ZERO        : gf_elem := (OTHERS => '0');
   constant GF_ONE         : gf_elem := (0 => '1', OTHERS => '0');
 
-  -- TODO: give reasonable names to signals
   signal L                : integer range 0 to NO_OF_SYNDROMES; -- current number of assumed errors
   signal n                : integer range 0 to NO_OF_SYNDROMES;
   signal k                : integer range 1 to NO_OF_SYNDROMES;

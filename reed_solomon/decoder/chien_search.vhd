@@ -19,10 +19,10 @@ entity chien_search is
     rst               : in  std_logic;
     new_calc          : in  std_logic;
     err_locator_in    : in  std_logic_vector(NO_OF_SYNDROMES*(GF_POLYNOMIAL'length-1)-1 downto 0);  -- highest order coefficient at MSBs, descending
-    ready             : out std_logic;                                                                -- when '1' the error locations have can be read from signal err_locations_out
+    ready             : out std_logic;                                                              -- when '1' the module is ready for new input and any possible output from the previous calculation can be read
     err_roots_out     : out std_logic_vector(CORRECTABLE_ERR*(GF_POLYNOMIAL'length-1)-1 downto 0);
     err_locations_out : out std_logic_vector(CORRECTABLE_ERR*(GF_POLYNOMIAL'length-1)-1 downto 0);
-    bit_locations_out : out std_logic_vector(CORRECTABLE_ERR*(GF_POLYNOMIAL'length-1)-1 downto 0)
+    sym_locations_out : out std_logic_vector(CORRECTABLE_ERR*(GF_POLYNOMIAL'length-1)-1 downto 0)   -- locations of erroneous symbols in codeword
   );
 end entity;
 
@@ -40,14 +40,14 @@ architecture rtl of chien_search is
   signal gammas           : gf_array_desc_t;                      -- polynomail terms of last evaluation
   signal gammas_new       : gf_array_desc_t;                      -- polynomial terms of current evaluation
   signal gammas_sum       : gf_elem;                              -- sum of polynomial terms
-  signal err_roots        : gf_output_values_t;                   -- output array of error roots
+  signal err_roots        : gf_output_values_t;                   -- output array of error locator roots
   signal err_locations    : gf_output_values_t;                   -- output array of error locations
-  signal bit_locations    : gf_output_values_t;                   -- output array of error bit locations
+  signal sym_locations    : gf_output_values_t;                   -- output array of error symbol locations
   signal k                : integer range 0 to CORRECTABLE_ERR-1; -- counter for found polynomial roots
   signal i                : unsigned(M-1 downto 0);               -- power of the primitive element, that the polynomial is evaluated over (i.e. a^i)
   signal calculator_state : calculator_state_t;
   signal root_found       : std_logic;
-  signal root_n           : gf_elem;                              -- error bit location: found root of polynomial
+  signal root_n           : gf_elem;                              -- error symbol location: found root of polynomial
   signal gf_elem_exp_in   : gf_elem;                              -- same as signal i, but cast to type gf_elem
   signal gf_elem_inv_in   : gf_elem;                              -- power of element which is inverse to a^i: 2^M-1-i
   signal gf_elem_exp_out  : gf_elem;                              -- error root: value of a^i
@@ -92,7 +92,7 @@ begin
       gammas            <= (OTHERS => GF_ZERO);
       err_roots         <= (OTHERS => GF_ZERO);
       err_locations     <= (OTHERS => GF_ZERO);
-      bit_locations     <= (OTHERS => GF_ZERO);
+      sym_locations     <= (OTHERS => GF_ZERO);
       k                 <= 0;
       i                 <= (OTHERS => '0');
       root_n            <= (OTHERS => '0');
@@ -109,7 +109,7 @@ begin
         calculator_state  <= CALCULATING;
         err_roots         <= (OTHERS => GF_ZERO);
         err_locations     <= (OTHERS => GF_ZERO);
-        bit_locations     <= (OTHERS => GF_ZERO);
+        sym_locations     <= (OTHERS => GF_ZERO);
 
         for j in CORRECTABLE_ERR downto 0 loop
           -- read in coefficients of error locator polynomial
@@ -142,7 +142,7 @@ begin
       if root_found = '1' then
         err_roots(k)      <= gf_elem_exp_out;
         err_locations(k)  <= gf_elem_inv_out;
-        bit_locations(k)  <= root_n;
+        sym_locations(k)  <= root_n;
 
         if k < CORRECTABLE_ERR-1 then
           k <= k + 1;
@@ -155,7 +155,7 @@ begin
   comb_proc : process( gammas,
                        err_roots,
                        err_locations,
-                       bit_locations,
+                       sym_locations,
                        calculator_state,
                        rst
                      )
@@ -172,7 +172,7 @@ begin
     for j in CORRECTABLE_ERR-1 downto 0 loop
       err_roots_out((j+1)*M-1 downto j*M)     <= err_roots(j);
       err_locations_out((j+1)*M-1 downto j*M) <= err_locations(j);
-      bit_locations_out((j+1)*M-1 downto j*M) <= bit_locations(j);
+      sym_locations_out((j+1)*M-1 downto j*M) <= sym_locations(j);
     end loop;
 
     if calculator_state = IDLE and rst = '0' then

@@ -20,7 +20,7 @@ add wave -noupdate -radix unsigned /vhdlib_tb/dut/gf_elem_exp_out
 add wave -noupdate -radix unsigned /vhdlib_tb/dut/gf_elem_inv_out
 add wave -noupdate -radix unsigned /vhdlib_tb/dut/err_roots
 add wave -noupdate -radix unsigned /vhdlib_tb/dut/err_locations
-add wave -noupdate -radix unsigned /vhdlib_tb/dut/bit_locations
+add wave -noupdate -radix unsigned /vhdlib_tb/dut/sym_locations
 add wave -noupdate /vhdlib_tb/dut/root_found
 
 TreeUpdate [SetDefaultTree]

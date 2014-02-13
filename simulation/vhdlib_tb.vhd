@@ -638,7 +638,7 @@ architecture chien_search_tb of vhdlib_tb is
   signal ready              : std_logic;
   signal err_roots_out      : std_logic_vector(CORRECTABLE_ERR*M-1 downto 0);
   signal err_locations_out  : std_logic_vector(CORRECTABLE_ERR*M-1 downto 0);
-  signal bit_locations_out  : std_logic_vector(CORRECTABLE_ERR*M-1 downto 0);
+  signal sym_locations_out  : std_logic_vector(CORRECTABLE_ERR*M-1 downto 0);
 
 begin
 
@@ -656,7 +656,7 @@ begin
     ready               => ready,
     err_roots_out       => err_roots_out,
     err_locations_out   => err_locations_out,
-    bit_locations_out   => bit_locations_out
+    sym_locations_out   => sym_locations_out
   );
 
   clk_proc : process
