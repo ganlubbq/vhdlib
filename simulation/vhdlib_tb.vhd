@@ -120,15 +120,15 @@ end rs_lfsr_encoder_tb;
 architecture syndrome_calculator_tb of vhdlib_tb is
   constant GF_POLYNOMIAL    : std_logic_vector := "10011"; -- irreducible, binary polynomial
   constant SYMBOL_WIDTH     : integer := 4;
-  constant NO_OF_SYMBOLS    : integer := 3;
+  constant NO_OF_COEFFS     : integer := 3;
   constant NO_OF_SYNDROMES  : integer := 6;
   constant M                : integer := GF_POLYNOMIAL'length-1;
 
   signal clk            : std_logic;
   signal rst            : std_logic;
-  signal en             : std_logic;
+  signal clk_enable     : std_logic;
   signal new_calc       : std_logic;
-  signal symbols        : std_logic_vector(SYMBOL_WIDTH*NO_OF_SYMBOLS-1 downto 0);
+  signal coefficients   : std_logic_vector(SYMBOL_WIDTH*NO_OF_COEFFS-1 downto 0);
   signal syndromes_in   : std_logic_vector(NO_OF_SYNDROMES*M-1 downto 0);
   signal syndromes_out  : std_logic_vector(NO_OF_SYNDROMES*M-1 downto 0);
 
@@ -138,15 +138,15 @@ begin
   generic map (
     GF_POLYNOMIAL   => GF_POLYNOMIAL,
     SYMBOL_WIDTH    => SYMBOL_WIDTH,
-    NO_OF_SYMBOLS   => NO_OF_SYMBOLS,
+    NO_OF_COEFFS    => NO_OF_COEFFS,
     NO_OF_SYNDROMES => NO_OF_SYNDROMES
   )
   port map (
     clk             => clk,
     rst             => rst,
-    en              => en,
+    clk_enable      => clk_enable,
     new_calc        => new_calc,
-    symbols         => symbols,
+    coefficients    => coefficients,
     syndromes_in    => syndromes_in,
     syndromes_out   => syndromes_out
   );
@@ -168,23 +168,23 @@ begin
   begin
 
     new_calc      <= '0';
-    en            <= '0';
-    symbols       <= (OTHERS => '0');
+    clk_enable    <= '0';
+    coefficients  <= (OTHERS => '0');
     syndromes_in  <= (OTHERS => '0');
 
     rst <= '1';
     wait for 6 ns;
     rst <= '0';
-    en    <= '1';
+    clk_enable  <= '1';
 
     while not endfile(vector_file) loop
       readline(vector_file, rdline);
       read(rdline, new_calc_stm);
       new_calc <= new_calc_stm;
 
-      for i in 0 to NO_OF_SYMBOLS-1 loop
+      for i in 0 to NO_OF_COEFFS-1 loop
         read(rdline, coefficient_stm);
-        symbols(symbols'high-i*SYMBOL_WIDTH downto symbols'length-(i+1)*SYMBOL_WIDTH) <= std_logic_vector(to_unsigned(coefficient_stm,SYMBOL_WIDTH));
+        coefficients(coefficients'high-i*SYMBOL_WIDTH downto coefficients'length-(i+1)*SYMBOL_WIDTH) <= std_logic_vector(to_unsigned(coefficient_stm,SYMBOL_WIDTH));
       end loop;
 
       for i in 0 to NO_OF_SYNDROMES-1 loop
@@ -203,8 +203,8 @@ begin
     end loop;
 
     new_calc      <= '0';
-    en            <= '0';
-    symbols       <= (OTHERS => '0');
+    clk_enable    <= '0';
+    coefficients  <= (OTHERS => '0');
     syndromes_in  <= (OTHERS => '0');
     report "HAS ENDED!";
     wait;

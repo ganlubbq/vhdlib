@@ -9,19 +9,19 @@ use work.vhdlib_package.all;
 
 entity syndrome_calculator is
   generic (
-    GF_POLYNOMIAL   : std_logic_vector  := G709_GF_POLY; -- irreducible, binary polynomial
-    SYMBOL_WIDTH    : natural           := 8;
-    NO_OF_SYMBOLS   : natural           := 3;
-    NO_OF_SYNDROMES : natural           := 6
+    GF_POLYNOMIAL   : std_logic_vector  := G709_GF_POLY;  -- irreducible, binary polynomial
+    SYMBOL_WIDTH    : natural           := 8;             -- size of polynomial coefficient symbols
+    NO_OF_COEFFS    : natural           := 3;             -- number of coefficient symbols to process at a time
+    NO_OF_SYNDROMES : natural           := 6              -- number of symdromes to calculate in parallel
   );
   port (
     clk           : in  std_logic;
     rst           : in  std_logic;
-    en            : in  std_logic;
+    clk_enable    : in  std_logic;
     new_calc      : in  std_logic;
-    symbols       : in  std_logic_vector(SYMBOL_WIDTH*NO_OF_SYMBOLS-1 downto 0);                -- highest order symbol on MSBs, descending
-    syndromes_in  : in  std_logic_vector(NO_OF_SYNDROMES*(GF_POLYNOMIAL'length-1)-1 downto 0);  -- lowest order syndrome on MSBs, ascending
-    syndromes_out : out std_logic_vector(NO_OF_SYNDROMES*(GF_POLYNOMIAL'length-1)-1 downto 0)   -- lowest order syndrome on MSBs, ascending
+    coefficients  : in  std_logic_vector(SYMBOL_WIDTH*NO_OF_COEFFS-1 downto 0);                -- highest order symbol on MSBs, descending
+    syndromes_in  : in  std_logic_vector(NO_OF_SYNDROMES*(GF_POLYNOMIAL'length-1)-1 downto 0); -- lowest order syndrome on MSBs, ascending
+    syndromes_out : out std_logic_vector(NO_OF_SYNDROMES*(GF_POLYNOMIAL'length-1)-1 downto 0)  -- lowest order syndrome on MSBs, ascending
   );
 end entity;
 
@@ -29,7 +29,7 @@ architecture rtl of syndrome_calculator is
   constant M  : natural := GF_POLYNOMIAL'length-1;
 
   subtype gf_elem     is std_logic_vector(M-1 downto 0);
-  type connections_t  is array(1 to NO_OF_SYNDROMES, 1 to NO_OF_SYMBOLS) of gf_elem;
+  type connections_t  is array(1 to NO_OF_SYNDROMES, 1 to NO_OF_COEFFS) of gf_elem;
   type gf_elements_t  is array(1 to NO_OF_SYNDROMES) of gf_elem;
 
   constant GF_ZERO  : gf_elem := (OTHERS => '0');
@@ -43,7 +43,7 @@ begin
   -- Horner scheme multipliers
   gen_syndromes : for j in 1 to NO_OF_SYNDROMES generate
   begin
-    gen_symbols : for i in 0 to NO_OF_SYMBOLS-1 generate
+    gen_symbols : for i in 0 to NO_OF_COEFFS-1 generate
     begin
       gen_top_multipliers : if i = 0 generate
       begin
@@ -54,7 +54,7 @@ begin
             SYMBOL_WIDTH  => SYMBOL_WIDTH
           )
           port map (
-            coefficient => symbols(symbols'high downto symbols'length-SYMBOL_WIDTH),
+            coefficient => coefficients(coefficients'high downto coefficients'length-SYMBOL_WIDTH),
             eval_value  => (OTHERS => '0'),
             product_in  => syndrome_wires(j),
             product_out => connections(j,i+1)
@@ -70,7 +70,7 @@ begin
             SYMBOL_WIDTH  => SYMBOL_WIDTH
           )
           port map (
-            coefficient => symbols(symbols'high-i*SYMBOL_WIDTH downto symbols'length-(i+1)*SYMBOL_WIDTH),
+            coefficient => coefficients(coefficients'high-i*SYMBOL_WIDTH downto coefficients'length-(i+1)*SYMBOL_WIDTH),
             eval_value  => (OTHERS => '0'),
             product_in  => connections(j,i),
             product_out => connections(j,i+1)
@@ -84,9 +84,9 @@ begin
     if rst = '1' then
       syndrome_regs <= (OTHERS => GF_ZERO);
     elsif rising_edge(clk) then
-      if en = '1' then
+      if clk_enable = '1' then
         for i in 1 to NO_OF_SYNDROMES loop
-          syndrome_regs(i) <= connections(i,NO_OF_SYMBOLS);
+          syndrome_regs(i) <= connections(i,NO_OF_COEFFS);
         end loop;
       end if;
     end if;
