@@ -7,7 +7,7 @@ package vhdlib_package is
   -- TYPES --
   -----------
 
-  -- Type for GF(2^M) polynomials as integer arrays
+  -- Type for GF(2^M) polynomials as natural integer arrays
   type gf2m_poly_t is array(natural range <>) of natural;
   type bin_matrix_t is array(natural range <>, natural range <>) of std_logic;
 
@@ -45,12 +45,12 @@ package vhdlib_package is
     return std_logic_vector;
 
   -- binary polynomial division of monomial polynomial
-  pure function single_bit_poly_div ( div_len  : integer;
+  pure function single_bit_poly_div ( div_len  : natural;
                                       divisor  : std_logic_vector)
     return std_logic_vector;
 
   -- exponentiation of primitive GF(2^M) element
-  pure function prim_elem_exp (n        : integer;
+  pure function prim_elem_exp (n        : natural;
                                gf_poly  : std_logic_vector)
     return std_logic_vector;
 
@@ -61,7 +61,7 @@ package vhdlib_package is
 
   -- exponentiation of binary matrix
   -- TODO: not in use currently; remove?
-  pure function bin_mat_exp (n        : integer;
+  pure function bin_mat_exp (n        : natural;
                              bin_mat  : bin_matrix_t)
     return bin_matrix_t;
 
@@ -111,7 +111,7 @@ package body vhdlib_package is
                               divisor   : std_logic_vector)
     return std_logic_vector is
 
-    constant M    : integer := divisor'length-1;
+    constant M    : natural := divisor'length-1;
     variable v    : std_logic_vector(dividend'length-1 downto 0);
     variable ret  : std_logic_vector(M-1 downto 0);
   begin
@@ -147,7 +147,7 @@ package body vhdlib_package is
   --
   -- Output       : Remainder polynomial from division.
   --
-  pure function single_bit_poly_div ( div_len  : integer;
+  pure function single_bit_poly_div ( div_len  : natural;
                                       divisor  : std_logic_vector)
     return std_logic_vector is
 
@@ -172,7 +172,7 @@ package body vhdlib_package is
   -- Output       : An element from GF(2^M) that is the nth power of
   --                the primitive element.
   --
-  pure function prim_elem_exp (n        : integer;
+  pure function prim_elem_exp (n        : natural;
                                gf_poly  : std_logic_vector)
     return std_logic_vector is
   begin
@@ -225,7 +225,7 @@ package body vhdlib_package is
   --
   -- Output       : A binary matrix of size equal to bin_mat.
   --
-  pure function bin_mat_exp (n        : integer;
+  pure function bin_mat_exp (n        : natural;
                              bin_mat  : bin_matrix_t)
     return bin_matrix_t is
     variable ret_mat  : bin_matrix_t(bin_mat'range, bin_mat'range);

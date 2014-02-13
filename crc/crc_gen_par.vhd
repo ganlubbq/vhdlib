@@ -11,7 +11,7 @@ use work.vhdlib_package.all;
 entity crc_gen_par is
   generic (
     POLYNOMIAL : std_logic_vector := CRC32_POLY; -- binary CRC polynomial
-    DATA_WIDTH : integer          := 8
+    DATA_WIDTH : natural          := 8
   );
   port (
     crc_in   : in  std_logic_vector(POLYNOMIAL'length-2 downto 0);

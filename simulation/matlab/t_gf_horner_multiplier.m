@@ -11,8 +11,9 @@ a = gf(2,m,gf_poly); %alpha
 for i=0:10
     gfa = gf(randi([0,2^m-1]),m,gf_poly);
     gfb = gf(randi([0,2^m-1]),m,gf_poly);
-    gfc = gfb*a+gfa;
-    fprintf(file,'%i %i %i\n',gfa.x, gfb.x, gfc.x);
+    gfc = a;    % change if the constant evaluation value is not a
+    gfd = gfb*gfc+gfa;
+    fprintf(file,'%i %i %i %i\n',gfa.x, gfb.x, gfc.x, gfd.x);
 end
 fclose(file);
 

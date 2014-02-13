@@ -11,8 +11,8 @@ use work.vhdlib_package.all;
 entity chien_search is
   generic (
     GF_POLYNOMIAL   : std_logic_vector  := G709_GF_POLY; -- irreducible, binary polynomial
-    CORRECTABLE_ERR : integer           := 3;
-    NO_OF_SYNDROMES : integer           := 6
+    CORRECTABLE_ERR : natural           := 3;
+    NO_OF_SYNDROMES : natural           := 6
   );
   port (
     clk               : in  std_logic;
@@ -27,7 +27,7 @@ entity chien_search is
 end entity;
 
 architecture rtl of chien_search is
-  constant M              : integer := GF_POLYNOMIAL'length-1;
+  constant M              : natural := GF_POLYNOMIAL'length-1;
 
   subtype gf_elem         is std_logic_vector(M-1 downto 0);
   type gf_array_desc_t    is array(CORRECTABLE_ERR downto 0) of gf_elem;
@@ -43,7 +43,7 @@ architecture rtl of chien_search is
   signal err_roots        : gf_output_values_t;                   -- output array of error locator roots
   signal err_locations    : gf_output_values_t;                   -- output array of error locations
   signal sym_locations    : gf_output_values_t;                   -- output array of error symbol locations
-  signal k                : integer range 0 to CORRECTABLE_ERR-1; -- counter for found polynomial roots
+  signal k                : natural range 0 to CORRECTABLE_ERR-1; -- counter for found polynomial roots
   signal i                : unsigned(M-1 downto 0);               -- power of the primitive element, that the polynomial is evaluated over (i.e. a^i)
   signal calculator_state : calculator_state_t;
   signal root_found       : std_logic;

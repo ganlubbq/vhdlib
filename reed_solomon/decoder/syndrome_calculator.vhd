@@ -10,9 +10,9 @@ use work.vhdlib_package.all;
 entity syndrome_calculator is
   generic (
     GF_POLYNOMIAL   : std_logic_vector  := G709_GF_POLY; -- irreducible, binary polynomial
-    SYMBOL_WIDTH    : integer           := 8;
-    NO_OF_SYMBOLS   : integer           := 3;
-    NO_OF_SYNDROMES : integer           := 6
+    SYMBOL_WIDTH    : natural           := 8;
+    NO_OF_SYMBOLS   : natural           := 3;
+    NO_OF_SYNDROMES : natural           := 6
   );
   port (
     clk           : in  std_logic;
@@ -26,7 +26,7 @@ entity syndrome_calculator is
 end entity;
 
 architecture rtl of syndrome_calculator is
-  constant M  : integer := GF_POLYNOMIAL'length-1;
+  constant M  : natural := GF_POLYNOMIAL'length-1;
 
   subtype gf_elem     is std_logic_vector(M-1 downto 0);
   type connections_t  is array(1 to NO_OF_SYNDROMES, 1 to NO_OF_SYMBOLS) of gf_elem;
@@ -54,7 +54,8 @@ begin
             SYMBOL_WIDTH  => SYMBOL_WIDTH
           )
           port map (
-            symbol      => symbols(symbols'high downto symbols'length-SYMBOL_WIDTH),
+            coefficient => symbols(symbols'high downto symbols'length-SYMBOL_WIDTH),
+            eval_value  => (OTHERS => '0'),
             product_in  => syndrome_wires(j),
             product_out => connections(j,i+1)
           );
@@ -69,7 +70,8 @@ begin
             SYMBOL_WIDTH  => SYMBOL_WIDTH
           )
           port map (
-            symbol      => symbols(symbols'high-i*SYMBOL_WIDTH downto symbols'length-(i+1)*SYMBOL_WIDTH),
+            coefficient => symbols(symbols'high-i*SYMBOL_WIDTH downto symbols'length-(i+1)*SYMBOL_WIDTH),
+            eval_value  => (OTHERS => '0'),
             product_in  => connections(j,i),
             product_out => connections(j,i+1)
           );

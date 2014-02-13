@@ -20,7 +20,7 @@ entity gf_multiplier is
 end entity;
 
 architecture rtl of gf_multiplier is
-  constant M  : integer := GF_POLYNOMIAL'length-1;
+  constant M  : natural := GF_POLYNOMIAL'length-1;
   constant PX : std_logic_vector(M downto 0) := GF_POLYNOMIAL; -- make sure polynomial range is descending
 
   type m_vector_array is array(M-1 downto 0) of std_logic_vector(M-1 downto 0);

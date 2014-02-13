@@ -160,11 +160,11 @@ begin
   end process clk_proc;
 
   stm_proc : process
-    variable rdline       : line;
-    variable new_calc_stm : std_logic;
-    variable symbol_stm   : integer;
-    variable syndrome_stm : integer;
-    file vector_file      : text open read_mode is "t_syndrome_calculator.txt";
+    variable rdline           : line;
+    variable new_calc_stm     : std_logic;
+    variable coefficient_stm  : integer;
+    variable syndrome_stm     : integer;
+    file vector_file          : text open read_mode is "t_syndrome_calculator.txt";
   begin
 
     new_calc      <= '0';
@@ -183,8 +183,8 @@ begin
       new_calc <= new_calc_stm;
 
       for i in 0 to NO_OF_SYMBOLS-1 loop
-        read(rdline, symbol_stm);
-        symbols(symbols'high-i*SYMBOL_WIDTH downto symbols'length-(i+1)*SYMBOL_WIDTH) <= std_logic_vector(to_unsigned(symbol_stm,SYMBOL_WIDTH));
+        read(rdline, coefficient_stm);
+        symbols(symbols'high-i*SYMBOL_WIDTH downto symbols'length-(i+1)*SYMBOL_WIDTH) <= std_logic_vector(to_unsigned(coefficient_stm,SYMBOL_WIDTH));
       end loop;
 
       for i in 0 to NO_OF_SYNDROMES-1 loop
@@ -279,11 +279,12 @@ end gf_lookup_table_tb;
 architecture gf_horner_multiplier_tb of vhdlib_tb is
 
   constant GF_POLYNOMIAL : std_logic_vector := "10011";
-  constant PRIM_ELEM_POW : integer          := 1;
+  constant PRIM_ELEM_POW : integer          := 0;
   constant SYMBOL_WIDTH  : integer          := 4;
   constant M             : integer          := GF_POLYNOMIAL'length-1;
 
-  signal symbol        : std_logic_vector(SYMBOL_WIDTH-1 downto 0);
+  signal coefficient   : std_logic_vector(SYMBOL_WIDTH-1 downto 0);
+  signal eval_value    : std_logic_vector(M-1 downto 0);
   signal product_in    : std_logic_vector(M-1 downto 0);
   signal product_out   : std_logic_vector(M-1 downto 0);
 
@@ -296,24 +297,28 @@ begin
     SYMBOL_WIDTH  => SYMBOL_WIDTH
   )
   port map (
-    symbol      => symbol,
+    coefficient => coefficient,
+    eval_value  => eval_value,
     product_in  => product_in,
     product_out => product_out
   );
 
   stm_proc : process
     variable rdline : line;
-    variable symbol_stm       : integer;
+    variable coefficient_stm  : integer;
+    variable eval_value_stm   : integer;
     variable product_in_stm   : integer;
     variable product_out_stm  : integer;
     file vector_file : text open read_mode is "t_gf_horner_multiplier.txt";
   begin
     while not endfile(vector_file) loop
       readline(vector_file, rdline);
-      read(rdline, symbol_stm);
+      read(rdline, coefficient_stm);
       read(rdline, product_in_stm);
+      read(rdline, eval_value_stm);
       read(rdline, product_out_stm);
-      symbol        <= std_logic_vector(to_unsigned(symbol_stm,SYMBOL_WIDTH));
+      coefficient   <= std_logic_vector(to_unsigned(coefficient_stm,SYMBOL_WIDTH));
+      eval_value    <= std_logic_vector(to_unsigned(eval_value_stm,M));
       product_in    <= std_logic_vector(to_unsigned(product_in_stm,M));
       wait for 1 ns;
       assert product_out = std_logic_vector(to_unsigned(product_out_stm,M)) report "ERROR!" severity error;

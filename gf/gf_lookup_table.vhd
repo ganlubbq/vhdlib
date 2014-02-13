@@ -23,7 +23,7 @@ entity gf_lookup_table is
 end entity;
 
 architecture rtl of gf_lookup_table is
-  constant M      : integer := GF_POLYNOMIAL'length-1;
+  constant M      : natural := GF_POLYNOMIAL'length-1;
 
   -- ROM table type
   type table_t is array(0 to 2**M-1) of std_logic_vector(M-1 downto 0);

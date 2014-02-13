@@ -11,7 +11,7 @@ use work.vhdlib_package.all;
 entity prbs_gen_par is
   generic (
     POLYNOMIAL : std_logic_vector := PRBS_3_POLY; -- binary PRBS polynomial
-    DATA_WIDTH : integer          := 4
+    DATA_WIDTH : natural          := 4
   );
   port (
     prbs_in   : in  std_logic_vector(DATA_WIDTH-1 downto 0);
@@ -22,7 +22,7 @@ end entity;
 
 architecture rtl of prbs_gen_par is
 
-  constant M        : integer := POLYNOMIAL'length-1;
+  constant M        : natural := POLYNOMIAL'length-1;
 
   function gen_prbs_matrix return bin_matrix_t is
     constant P        : std_logic_vector(M downto 0) := POLYNOMIAL;

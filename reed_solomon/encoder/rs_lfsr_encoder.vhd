@@ -26,10 +26,10 @@ entity rs_lfsr_encoder is
 end entity;
 
 architecture rtl of rs_lfsr_encoder is
-  constant M  : integer := GF_POLYNOMIAL'length-1;                                -- order of GF irreducible, binary polynomial
-  constant N  : integer := 2**M-1;                                                -- total number of symbols in codeword
-  constant DT : integer := GEN_POLYNOMIAL'length-1;                               -- number of parity symbols in codeword; twice the number of correctable errors
-  constant K  : integer := N-DT;                                                  -- number of information symbols in codeword
+  constant M  : natural := GF_POLYNOMIAL'length-1;                                -- order of GF irreducible, binary polynomial
+  constant N  : natural := 2**M-1;                                                -- total number of symbols in codeword
+  constant DT : natural := GEN_POLYNOMIAL'length-1;                               -- number of parity symbols in codeword; twice the number of correctable errors
+  constant K  : natural := N-DT;                                                  -- number of information symbols in codeword
   constant GX : gf2m_poly_t(GEN_POLYNOMIAL'length-1 downto 0) := GEN_POLYNOMIAL;  -- done to make sure polynomial range is descending
 
   subtype gf_elem is std_logic_vector(M-1 downto 0);

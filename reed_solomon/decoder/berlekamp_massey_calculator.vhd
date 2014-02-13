@@ -10,7 +10,7 @@ use work.vhdlib_package.all;
 entity berlekamp_massey_calculator is
   generic (
     GF_POLYNOMIAL   : std_logic_vector  := G709_GF_POLY; -- irreducible, binary polynomial
-    NO_OF_SYNDROMES : integer           := 6
+    NO_OF_SYNDROMES : natural           := 6
   );
   port (
     clk             : in  std_logic;
@@ -23,7 +23,7 @@ entity berlekamp_massey_calculator is
 end entity;
 
 architecture rtl of berlekamp_massey_calculator is
-  constant M              : integer := GF_POLYNOMIAL'length-1;
+  constant M              : natural := GF_POLYNOMIAL'length-1;
 
   subtype gf_elem         is std_logic_vector(M-1 downto 0);
   type gf_array_desc_t    is array(NO_OF_SYNDROMES-1 downto 0) of gf_elem;
@@ -32,9 +32,9 @@ architecture rtl of berlekamp_massey_calculator is
   constant GF_ZERO        : gf_elem := (OTHERS => '0');
   constant GF_ONE         : gf_elem := (0 => '1', OTHERS => '0');
 
-  signal L                : integer range 0 to NO_OF_SYNDROMES; -- current number of assumed errors
-  signal n                : integer range 0 to NO_OF_SYNDROMES;
-  signal k                : integer range 1 to NO_OF_SYNDROMES;
+  signal L                : natural range 0 to NO_OF_SYNDROMES; -- current number of assumed errors
+  signal n                : natural range 0 to NO_OF_SYNDROMES;
+  signal k                : natural range 1 to NO_OF_SYNDROMES;
   signal d                : gf_elem;          -- discrepancy
   signal d_mul_a_inputs   : gf_array_desc_t;
   signal d_mul_b_inputs   : gf_array_desc_t;
