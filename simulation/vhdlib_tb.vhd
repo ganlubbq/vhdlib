@@ -114,32 +114,35 @@ begin
 end rs_lfsr_encoder_tb;
 
 -------------------------
--- syndrome_calculator --
+-- gf_horner_evaluator --
 -------------------------
 
-architecture syndrome_calculator_tb of vhdlib_tb is
+architecture gf_horner_evaluator_tb of vhdlib_tb is
   constant GF_POLYNOMIAL    : std_logic_vector := "10011"; -- irreducible, binary polynomial
-  constant SYMBOL_WIDTH     : integer := 4;
-  constant NO_OF_COEFFS     : integer := 3;
-  constant NO_OF_SYNDROMES  : integer := 6;
-  constant M                : integer := GF_POLYNOMIAL'length-1;
+  constant NO_OF_PAR_EVALS  : natural := 6;
+  constant SYNDROME_CALC    : boolean := TRUE;
+  constant NO_OF_COEFFS     : natural := 3;
+  constant SYMBOL_WIDTH     : natural := 4;
+  constant M                : natural := GF_POLYNOMIAL'length-1;
 
   signal clk            : std_logic;
   signal rst            : std_logic;
   signal clk_enable     : std_logic;
   signal new_calc       : std_logic;
   signal coefficients   : std_logic_vector(SYMBOL_WIDTH*NO_OF_COEFFS-1 downto 0);
-  signal syndromes_in   : std_logic_vector(NO_OF_SYNDROMES*M-1 downto 0);
-  signal syndromes_out  : std_logic_vector(NO_OF_SYNDROMES*M-1 downto 0);
+  signal eval_values    : std_logic_vector(NO_OF_PAR_EVALS*M-1 downto 0);
+  signal start_values   : std_logic_vector(NO_OF_PAR_EVALS*M-1 downto 0);
+  signal result_values  : std_logic_vector(NO_OF_PAR_EVALS*M-1 downto 0);
 
 begin
 
-  dut : entity work.syndrome_calculator(rtl)
+  dut : entity work.gf_horner_evaluator(rtl)
   generic map (
     GF_POLYNOMIAL   => GF_POLYNOMIAL,
-    SYMBOL_WIDTH    => SYMBOL_WIDTH,
+    NO_OF_PAR_EVALS => NO_OF_PAR_EVALS,
+    SYNDROME_CALC   => SYNDROME_CALC,
     NO_OF_COEFFS    => NO_OF_COEFFS,
-    NO_OF_SYNDROMES => NO_OF_SYNDROMES
+    SYMBOL_WIDTH    => SYMBOL_WIDTH
   )
   port map (
     clk             => clk,
@@ -147,8 +150,9 @@ begin
     clk_enable      => clk_enable,
     new_calc        => new_calc,
     coefficients    => coefficients,
-    syndromes_in    => syndromes_in,
-    syndromes_out   => syndromes_out
+    eval_values     => eval_values,
+    start_values    => start_values,
+    result_values   => result_values
   );
 
   clk_proc : process
@@ -163,14 +167,15 @@ begin
     variable rdline           : line;
     variable new_calc_stm     : std_logic;
     variable coefficient_stm  : integer;
-    variable syndrome_stm     : integer;
-    file vector_file          : text open read_mode is "t_syndrome_calculator.txt";
+    variable value_stm        : integer;
+    file vector_file          : text open read_mode is "t_gf_horner_evaluator.txt";
   begin
 
     new_calc      <= '0';
     clk_enable    <= '0';
     coefficients  <= (OTHERS => '0');
-    syndromes_in  <= (OTHERS => '0');
+    eval_values   <= (OTHERS => '0');
+    start_values  <= (OTHERS => '0');
 
     rst <= '1';
     wait for 6 ns;
@@ -187,16 +192,21 @@ begin
         coefficients(coefficients'high-i*SYMBOL_WIDTH downto coefficients'length-(i+1)*SYMBOL_WIDTH) <= std_logic_vector(to_unsigned(coefficient_stm,SYMBOL_WIDTH));
       end loop;
 
-      for i in 0 to NO_OF_SYNDROMES-1 loop
-        read(rdline, syndrome_stm);
-        syndromes_in(syndromes_in'high-i*M downto syndromes_in'length-(i+1)*M) <= std_logic_vector(to_unsigned(syndrome_stm,M));
+      for i in 0 to NO_OF_PAR_EVALS-1 loop
+        read(rdline, value_stm);
+        eval_values(eval_values'high-i*M downto eval_values'length-(i+1)*M) <= std_logic_vector(to_unsigned(value_stm,M));
+      end loop;
+
+      for i in 0 to NO_OF_PAR_EVALS-1 loop
+        read(rdline, value_stm);
+        start_values(start_values'high-i*M downto start_values'length-(i+1)*M) <= std_logic_vector(to_unsigned(value_stm,M));
       end loop;
 
       wait for 10 ns;
 
-      for i in 0 to NO_OF_SYNDROMES-1 loop
-        read(rdline, syndrome_stm);
-        assert syndromes_out(syndromes_out'high-i*M downto syndromes_out'length-(i+1)*M) = std_logic_vector(to_unsigned(syndrome_stm,M))
+      for i in 0 to NO_OF_PAR_EVALS-1 loop
+        read(rdline, value_stm);
+        assert result_values(result_values'high-i*M downto result_values'length-(i+1)*M) = std_logic_vector(to_unsigned(value_stm,M))
           report "ERROR!" severity error;
       end loop;
 
@@ -205,12 +215,13 @@ begin
     new_calc      <= '0';
     clk_enable    <= '0';
     coefficients  <= (OTHERS => '0');
-    syndromes_in  <= (OTHERS => '0');
+    eval_values   <= (OTHERS => '0');
+    start_values  <= (OTHERS => '0');
     report "HAS ENDED!";
     wait;
   end process stm_proc;
 
-end syndrome_calculator_tb;
+end gf_horner_evaluator_tb;
 
 ----------------------
 -- gf_lookup_table --

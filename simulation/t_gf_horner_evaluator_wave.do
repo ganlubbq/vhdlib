@@ -3,10 +3,12 @@ onerror {resume}
 quietly WaveActivateNextPane {} 0
 add wave -noupdate /vhdlib_tb/dut/clk
 add wave -noupdate /vhdlib_tb/dut/rst
-add wave -noupdate /vhdlib_tb/dut/en
-add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/symbols
-add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/syndromes_in
-add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/syndromes_out
+add wave -noupdate /vhdlib_tb/dut/clk_enable
+add wave -noupdate /vhdlib_tb/dut/new_calc
+add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/coefficients
+add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/start_values
+add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/eval_values
+add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/result_values
 
 TreeUpdate [SetDefaultTree]
 
