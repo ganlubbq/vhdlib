@@ -636,6 +636,101 @@ begin
 
 end error_value_evaluator_tb;
 
+-----------------------
+-- forney_calculator --
+-----------------------
+
+architecture forney_calculator_tb of vhdlib_tb is
+  constant GF_POLYNOMIAL    : std_logic_vector := "10011"; -- irreducible, binary polynomial
+  constant NO_OF_CORR_ERRS  : integer := 3;
+  constant NO_OF_SYNDROMES  : integer := 2*NO_OF_CORR_ERRS;
+  constant M                : integer := GF_POLYNOMIAL'length-1;
+
+  signal clk              : std_logic;
+  signal rst              : std_logic;
+  signal new_calc         : std_logic;
+  signal err_roots_in     : std_logic_vector(NO_OF_CORR_ERRS*M-1 downto 0);
+  signal err_eval_in      : std_logic_vector(NO_OF_SYNDROMES*M-1 downto 0);
+  signal err_values_out   : std_logic_vector(NO_OF_CORR_ERRS*M-1 downto 0);
+  signal ready            : std_logic;
+
+begin
+
+  dut : entity work.forney_calculator(rtl)
+  generic map (
+    GF_POLYNOMIAL   => GF_POLYNOMIAL,
+    NO_OF_CORR_ERRS => NO_OF_CORR_ERRS
+  )
+  port map (
+    clk             => clk,
+    rst             => rst,
+    new_calc        => new_calc,
+    err_roots_in    => err_roots_in,
+    err_eval_in     => err_eval_in,
+    err_values_out  => err_values_out,
+    ready           => ready
+  );
+
+  clk_proc : process
+  begin
+    clk <= '0';
+    wait for 5 ns;
+    clk <= '1';
+    wait for 5 ns;
+  end process clk_proc;
+
+  stm_proc : process
+    variable rdline       : line;
+    variable gf_elem_stm  : integer;
+    file vector_file      : text open read_mode is "t_forney_calculator.txt";
+  begin
+
+    new_calc      <= '0';
+    err_roots_in  <= (OTHERS => '0');
+    err_eval_in   <= (OTHERS => '0');
+
+    rst <= '1';
+    wait for 6 ns;
+    rst <= '0';
+
+    while not endfile(vector_file) loop
+      readline(vector_file, rdline);
+      new_calc <= '1';
+
+      for i in 0 to NO_OF_CORR_ERRS-1 loop
+        read(rdline, gf_elem_stm);
+        err_roots_in(err_roots_in'high-i*M downto err_roots_in'length-(i+1)*M) <= std_logic_vector(to_unsigned(gf_elem_stm,M));
+      end loop;
+
+      for i in 0 to NO_OF_SYNDROMES-1 loop
+        read(rdline, gf_elem_stm);
+        err_eval_in(err_eval_in'high-i*M downto err_eval_in'length-(i+1)*M) <= std_logic_vector(to_unsigned(gf_elem_stm,M));
+      end loop;
+
+      wait for 10 ns;
+
+      new_calc  <= '0';
+
+      wait until ready = '1';
+
+      wait for 10 ns;
+
+--       for i in 0 to NO_OF_SYNDROMES-1 loop
+--         read(rdline, gf_elem_stm);
+--         assert err_values_out(err_values_out'high-i*M downto err_values_out'length-(i+1)*M) = std_logic_vector(to_unsigned(gf_elem_stm,M))
+--           report "ERROR!" severity error;
+--       end loop;
+
+    end loop;
+
+    err_roots_in  <= (OTHERS => '0');
+    err_eval_in   <= (OTHERS => '0');
+    report "HAS ENDED!";
+    wait;
+  end process stm_proc;
+
+end forney_calculator_tb;
+
 ------------------
 -- chien_search --
 ------------------
