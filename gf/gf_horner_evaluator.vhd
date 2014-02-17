@@ -13,7 +13,7 @@ entity gf_horner_evaluator is
     NO_OF_PAR_EVALS : natural           := 3;             -- number of polynomial evaluations done in parallel
     SYNDROME_CALC   : boolean           := FALSE;         -- if FALSE the values on signal eval_values are used for evaluation
                                                           -- if TRUE the values alpha^1 through alpha^NO_OF_PAR_EVALS are used for evaluation
-    NO_OF_COEFFS    : natural           := 3;             -- number of coefficient symbols to process at a time; must divide polynomial (i.e. 0 remainder)
+    NO_OF_COEFS     : natural           := 3;             -- number of coefficient symbols to process at a time; must divide polynomial (i.e. 0 remainder)
     SYMBOL_WIDTH    : natural           := 8              -- size of polynomial coefficient symbols
   );
   port (
@@ -21,7 +21,7 @@ entity gf_horner_evaluator is
     rst           : in  std_logic;
     clk_enable    : in  std_logic;
     new_calc      : in  std_logic;
-    coefficients  : in  std_logic_vector(SYMBOL_WIDTH*NO_OF_COEFFS-1 downto 0);                 -- polynomial coefficients; highest order symbol on MSBs, descending
+    coefficients  : in  std_logic_vector(SYMBOL_WIDTH*NO_OF_COEFS-1 downto 0);                  -- polynomial coefficients; highest order symbol on MSBs, descending
     eval_values   : in  std_logic_vector(NO_OF_PAR_EVALS*(GF_POLYNOMIAL'length-1)-1 downto 0);
     start_values  : in  std_logic_vector(NO_OF_PAR_EVALS*(GF_POLYNOMIAL'length-1)-1 downto 0);
     result_values : out std_logic_vector(NO_OF_PAR_EVALS*(GF_POLYNOMIAL'length-1)-1 downto 0)
@@ -32,7 +32,7 @@ architecture rtl of gf_horner_evaluator is
   constant M  : natural := GF_POLYNOMIAL'length-1;
 
   subtype gf_elem       is std_logic_vector(M-1 downto 0);
-  type connections_t    is array(1 to NO_OF_PAR_EVALS, 1 to NO_OF_COEFFS) of gf_elem;
+  type connections_t    is array(1 to NO_OF_PAR_EVALS, 1 to NO_OF_COEFS) of gf_elem;
   type gf_elements_t    is array(1 to NO_OF_PAR_EVALS) of gf_elem;
 
   constant GF_ZERO  : gf_elem := (OTHERS => '0');
@@ -46,7 +46,7 @@ begin
   -- Horner scheme multipliers
   gen_parallel_evaluations : for j in 1 to NO_OF_PAR_EVALS generate
   begin
-    gen_coefficients : for i in 0 to NO_OF_COEFFS-1 generate
+    gen_coefficients : for i in 0 to NO_OF_COEFS-1 generate
     begin
 
       gen_syndrome_multipliers : if SYNDROME_CALC = TRUE generate
@@ -60,7 +60,7 @@ begin
             )
             port map (
               coefficient => coefficients(coefficients'high downto coefficients'length-SYMBOL_WIDTH),
-              eval_value  => eval_values(eval_values'high downto eval_values'length-M),
+              eval_value  => (OTHERS => '0'),
               product_in  => eval_value_wires(j),
               product_out => connections(j,i+1)
             );
@@ -76,7 +76,7 @@ begin
             )
             port map (
               coefficient => coefficients(coefficients'high-i*SYMBOL_WIDTH downto coefficients'length-(i+1)*SYMBOL_WIDTH),
-              eval_value  => eval_values(eval_values'high-i*M downto eval_values'length-(i+1)*M),
+              eval_value  => (OTHERS => '0'),
               product_in  => connections(j,i),
               product_out => connections(j,i+1)
             );
@@ -126,7 +126,7 @@ begin
     elsif rising_edge(clk) then
       if clk_enable = '1' then
         for i in 1 to NO_OF_PAR_EVALS loop
-          result_value_regs(i)  <= connections(i,NO_OF_COEFFS);
+          result_value_regs(i)  <= connections(i,NO_OF_COEFS);
         end loop;
       end if;
     end if;

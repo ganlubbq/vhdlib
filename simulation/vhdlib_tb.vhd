@@ -121,7 +121,7 @@ architecture gf_horner_evaluator_tb of vhdlib_tb is
   constant GF_POLYNOMIAL    : std_logic_vector := "10011"; -- irreducible, binary polynomial
   constant NO_OF_PAR_EVALS  : natural := 6;
   constant SYNDROME_CALC    : boolean := TRUE;
-  constant NO_OF_COEFFS     : natural := 3;
+  constant NO_OF_COEFS      : natural := 3;
   constant SYMBOL_WIDTH     : natural := 4;
   constant M                : natural := GF_POLYNOMIAL'length-1;
 
@@ -129,7 +129,7 @@ architecture gf_horner_evaluator_tb of vhdlib_tb is
   signal rst            : std_logic;
   signal clk_enable     : std_logic;
   signal new_calc       : std_logic;
-  signal coefficients   : std_logic_vector(SYMBOL_WIDTH*NO_OF_COEFFS-1 downto 0);
+  signal coefficients   : std_logic_vector(SYMBOL_WIDTH*NO_OF_COEFS-1 downto 0);
   signal eval_values    : std_logic_vector(NO_OF_PAR_EVALS*M-1 downto 0);
   signal start_values   : std_logic_vector(NO_OF_PAR_EVALS*M-1 downto 0);
   signal result_values  : std_logic_vector(NO_OF_PAR_EVALS*M-1 downto 0);
@@ -141,7 +141,7 @@ begin
     GF_POLYNOMIAL   => GF_POLYNOMIAL,
     NO_OF_PAR_EVALS => NO_OF_PAR_EVALS,
     SYNDROME_CALC   => SYNDROME_CALC,
-    NO_OF_COEFFS    => NO_OF_COEFFS,
+    NO_OF_COEFS     => NO_OF_COEFS,
     SYMBOL_WIDTH    => SYMBOL_WIDTH
   )
   port map (
@@ -187,7 +187,7 @@ begin
       read(rdline, new_calc_stm);
       new_calc <= new_calc_stm;
 
-      for i in 0 to NO_OF_COEFFS-1 loop
+      for i in 0 to NO_OF_COEFS-1 loop
         read(rdline, coefficient_stm);
         coefficients(coefficients'high-i*SYMBOL_WIDTH downto coefficients'length-(i+1)*SYMBOL_WIDTH) <= std_logic_vector(to_unsigned(coefficient_stm,SYMBOL_WIDTH));
       end loop;
@@ -460,8 +460,8 @@ end prbs_gen_par_tb;
 architecture berlekamp_massey_calculator_tb of vhdlib_tb is
   constant GF_POLYNOMIAL    : std_logic_vector := "10011"; -- irreducible, binary polynomial
   constant SYMBOL_WIDTH     : integer := 4;
-  constant CORRECTABLE_ERR  : integer := 3;
-  constant NO_OF_SYNDROMES  : integer := 2*CORRECTABLE_ERR;
+  constant NO_OF_CORR_ERRS  : integer := 3;
+  constant NO_OF_SYNDROMES  : integer := 2*NO_OF_CORR_ERRS;
   constant M                : integer := GF_POLYNOMIAL'length-1;
 
   signal clk              : std_logic;
@@ -547,8 +547,8 @@ end berlekamp_massey_calculator_tb;
 architecture error_value_evaluator_tb of vhdlib_tb is
   constant GF_POLYNOMIAL    : std_logic_vector := "10011"; -- irreducible, binary polynomial
   constant SYMBOL_WIDTH     : integer := 4;
-  constant CORRECTABLE_ERR  : integer := 3;
-  constant NO_OF_SYNDROMES  : integer := 2*CORRECTABLE_ERR;
+  constant NO_OF_CORR_ERRS  : integer := 3;
+  constant NO_OF_SYNDROMES  : integer := 2*NO_OF_CORR_ERRS;
   constant M                : integer := GF_POLYNOMIAL'length-1;
 
   signal clk              : std_logic;
@@ -572,8 +572,8 @@ begin
     new_calc        => new_calc,
     syndromes_in    => syndromes_in,
     err_locator_in  => err_locator_in,
-    ready           => ready,
-    err_eval_out    => err_eval_out
+    err_eval_out    => err_eval_out,
+    ready           => ready
   );
 
   clk_proc : process
@@ -643,8 +643,8 @@ end error_value_evaluator_tb;
 architecture chien_search_tb of vhdlib_tb is
   constant GF_POLYNOMIAL    : std_logic_vector := "10011"; -- irreducible, binary polynomial
   constant SYMBOL_WIDTH     : integer := 4;
-  constant CORRECTABLE_ERR  : integer := 3;
-  constant NO_OF_SYNDROMES  : integer := 2*CORRECTABLE_ERR;
+  constant NO_OF_CORR_ERRS  : integer := 3;
+  constant NO_OF_SYNDROMES  : integer := 2*NO_OF_CORR_ERRS;
   constant M                : integer := GF_POLYNOMIAL'length-1;
 
   signal clk                : std_logic;
@@ -652,16 +652,16 @@ architecture chien_search_tb of vhdlib_tb is
   signal new_calc           : std_logic;
   signal err_locator_in     : std_logic_vector(NO_OF_SYNDROMES*M-1 downto 0);
   signal ready              : std_logic;
-  signal err_roots_out      : std_logic_vector(CORRECTABLE_ERR*M-1 downto 0);
-  signal err_locations_out  : std_logic_vector(CORRECTABLE_ERR*M-1 downto 0);
-  signal sym_locations_out  : std_logic_vector(CORRECTABLE_ERR*M-1 downto 0);
+  signal err_roots_out      : std_logic_vector(NO_OF_CORR_ERRS*M-1 downto 0);
+  signal err_locations_out  : std_logic_vector(NO_OF_CORR_ERRS*M-1 downto 0);
+  signal sym_locations_out  : std_logic_vector(NO_OF_CORR_ERRS*M-1 downto 0);
 
 begin
 
   dut : entity work.chien_search(rtl)
   generic map (
     GF_POLYNOMIAL   => GF_POLYNOMIAL,
-    CORRECTABLE_ERR => CORRECTABLE_ERR,
+    NO_OF_CORR_ERRS => NO_OF_CORR_ERRS,
     NO_OF_SYNDROMES => NO_OF_SYNDROMES
   )
   port map (

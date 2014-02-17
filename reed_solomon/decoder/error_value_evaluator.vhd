@@ -18,8 +18,8 @@ entity error_value_evaluator is
     new_calc        : in  std_logic;
     syndromes_in    : in  std_logic_vector(NO_OF_SYNDROMES*(GF_POLYNOMIAL'length-1)-1 downto 0);  -- lowest order syndrome at MSBs, ascending
     err_locator_in  : in  std_logic_vector(NO_OF_SYNDROMES*(GF_POLYNOMIAL'length-1)-1 downto 0);  -- highest order coefficient at MSBs, descending
-    ready           : out std_logic;
-    err_eval_out    : out std_logic_vector(NO_OF_SYNDROMES*(GF_POLYNOMIAL'length-1)-1 downto 0)   -- highest order coefficient at MSBs, descending
+    err_eval_out    : out std_logic_vector(NO_OF_SYNDROMES*(GF_POLYNOMIAL'length-1)-1 downto 0);  -- highest order coefficient at MSBs, descending
+    ready           : out std_logic
   );
 end entity;
 
@@ -50,7 +50,7 @@ begin
   -- Component instantiations --
   ------------------------------
 
-  multipliers : for i in err_eval'range(1) generate -- TODO: could range be decreased? (length of error locator poly always <= CORRECTABLE_ERR+1?)
+  multipliers : for i in err_eval'range(1) generate -- TODO: could range be decreased? (length of error locator poly always <= NO_OF_CORR_ERRS+1?)
   begin
     multiplier : entity work.gf_multiplier(rtl)
       generic map (

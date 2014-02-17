@@ -11,7 +11,7 @@ use work.vhdlib_package.all;
 entity chien_search is
   generic (
     GF_POLYNOMIAL   : std_logic_vector  := G709_GF_POLY; -- irreducible, binary polynomial
-    CORRECTABLE_ERR : natural           := 3;
+    NO_OF_CORR_ERRS : natural           := 3;
     NO_OF_SYNDROMES : natural           := 6
   );
   port (
@@ -20,9 +20,9 @@ entity chien_search is
     new_calc          : in  std_logic;
     err_locator_in    : in  std_logic_vector(NO_OF_SYNDROMES*(GF_POLYNOMIAL'length-1)-1 downto 0);  -- highest order coefficient at MSBs, descending
     ready             : out std_logic;                                                              -- when '1' the module is ready for new input and any possible output from the previous calculation can be read
-    err_roots_out     : out std_logic_vector(CORRECTABLE_ERR*(GF_POLYNOMIAL'length-1)-1 downto 0);
-    err_locations_out : out std_logic_vector(CORRECTABLE_ERR*(GF_POLYNOMIAL'length-1)-1 downto 0);
-    sym_locations_out : out std_logic_vector(CORRECTABLE_ERR*(GF_POLYNOMIAL'length-1)-1 downto 0)   -- locations of erroneous symbols in codeword
+    err_roots_out     : out std_logic_vector(NO_OF_CORR_ERRS*(GF_POLYNOMIAL'length-1)-1 downto 0);
+    err_locations_out : out std_logic_vector(NO_OF_CORR_ERRS*(GF_POLYNOMIAL'length-1)-1 downto 0);
+    sym_locations_out : out std_logic_vector(NO_OF_CORR_ERRS*(GF_POLYNOMIAL'length-1)-1 downto 0)   -- locations of erroneous symbols in codeword
   );
 end entity;
 
@@ -30,8 +30,8 @@ architecture rtl of chien_search is
   constant M              : natural := GF_POLYNOMIAL'length-1;
 
   subtype gf_elem         is std_logic_vector(M-1 downto 0);
-  type gf_array_desc_t    is array(CORRECTABLE_ERR downto 0) of gf_elem;
-  type gf_output_values_t is array(CORRECTABLE_ERR-1 downto 0) of gf_elem;
+  type gf_array_desc_t    is array(NO_OF_CORR_ERRS downto 0) of gf_elem;
+  type gf_output_values_t is array(NO_OF_CORR_ERRS-1 downto 0) of gf_elem;
   type calculator_state_t is (IDLE, CALCULATING);
 
   constant GF_ZERO        : gf_elem := (OTHERS => '0');
@@ -43,7 +43,7 @@ architecture rtl of chien_search is
   signal err_roots        : gf_output_values_t;                   -- output array of error locator roots
   signal err_locations    : gf_output_values_t;                   -- output array of error locations
   signal sym_locations    : gf_output_values_t;                   -- output array of error symbol locations
-  signal k                : natural range 0 to CORRECTABLE_ERR-1; -- counter for found polynomial roots
+  signal k                : natural range 0 to NO_OF_CORR_ERRS-1; -- counter for found polynomial roots
   signal i                : unsigned(M-1 downto 0);               -- power of the primitive element, that the polynomial is evaluated over (i.e. a^i)
   signal calculator_state : calculator_state_t;
   signal root_found       : std_logic;
@@ -56,7 +56,7 @@ architecture rtl of chien_search is
 begin
 
   -- One GF multiplier per term in the error locator
-  gen_coef_multipliers : for j in 0 to CORRECTABLE_ERR generate
+  gen_coef_multipliers : for j in 0 to NO_OF_CORR_ERRS generate
   begin
     coef_multiplier : entity work.gf_multiplier(rtl)
       generic map (
@@ -111,7 +111,7 @@ begin
         err_locations     <= (OTHERS => GF_ZERO);
         sym_locations     <= (OTHERS => GF_ZERO);
 
-        for j in CORRECTABLE_ERR downto 0 loop
+        for j in NO_OF_CORR_ERRS downto 0 loop
           -- read in coefficients of error locator polynomial
           gammas(j) <= err_locator_in((j+1)*M-1 downto j*M);
         end loop;
@@ -144,7 +144,7 @@ begin
         err_locations(k)  <= gf_elem_inv_out;
         sym_locations(k)  <= root_n;
 
-        if k < CORRECTABLE_ERR-1 then
+        if k < NO_OF_CORR_ERRS-1 then
           k <= k + 1;
         end if;
       end if;
@@ -169,7 +169,7 @@ begin
     gammas_sum        <= var_gammas_sum;
 
     -- output calculated values
-    for j in CORRECTABLE_ERR-1 downto 0 loop
+    for j in NO_OF_CORR_ERRS-1 downto 0 loop
       err_roots_out((j+1)*M-1 downto j*M)     <= err_roots(j);
       err_locations_out((j+1)*M-1 downto j*M) <= err_locations(j);
       sym_locations_out((j+1)*M-1 downto j*M) <= sym_locations(j);
