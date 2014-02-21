@@ -18,7 +18,7 @@ c = c(length(c):-1:1); % reverse
 cx = c.x;
 
 rv = gf(zeros(1,ne),m,gf_poly); % result_values
-ev = a.^(1:ne); % eval_values 
+ev = gf(randi([0 2^m-1],1,ne),m,gf_poly); % a.^(1:ne);
 
 
 % iterate over coefficients

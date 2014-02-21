@@ -11,7 +11,6 @@ use work.vhdlib_package.all;
 entity gf_horner_multiplier is
   generic (
     GF_POLYNOMIAL : std_logic_vector  := G709_GF_POLY;  -- irreducible, binary polynomial
-    PRIM_ELEM_POW : natural           := 1;             -- exponent of primitive element of GF(2^M)
     SYMBOL_WIDTH  : natural           := 8              -- size of polynomial coefficients
   );
   port (
@@ -25,38 +24,22 @@ end entity;
 architecture rtl of gf_horner_multiplier is
 
   constant M          : natural                         := GF_POLYNOMIAL'length-1;
-  constant PRIM_ELEM  : std_logic_vector(M-1 downto 0)  := prim_elem_exp(PRIM_ELEM_POW, GF_POLYNOMIAL);
 
   signal product          : std_logic_vector(M-1 downto 0);
   signal coefficient_pad  : std_logic_vector(M-1 downto 0);
 
 begin
 
-  gen_dyn_multiplier : if PRIM_ELEM_POW = 0 generate
-    -- the value to evaluate the polynomial over can change
-    gf_mul : entity work.gf_multiplier(rtl)
-      generic map (
-        GF_POLYNOMIAL => GF_POLYNOMIAL
-      )
-      port map (
-        mul_a   => eval_value,
-        mul_b   => product_in,
-        product => product
-      );
-  end generate gen_dyn_multiplier;
-
-  gen_const_multiplier : if PRIM_ELEM_POW > 0 generate
-    -- the value to evaluate the polynomial over is constant
-    gf_mul : entity work.gf_multiplier(rtl)
-      generic map (
-        GF_POLYNOMIAL => GF_POLYNOMIAL
-      )
-      port map (
-        mul_a   => PRIM_ELEM,
-        mul_b   => product_in,
-        product => product
-      );
-  end generate gen_const_multiplier;
+  -- a GF(2^M) multiplier
+  gf_mul : entity work.gf_multiplier(rtl)
+    generic map (
+      GF_POLYNOMIAL => GF_POLYNOMIAL
+    )
+    port map (
+      mul_a   => eval_value,
+      mul_b   => product_in,
+      product => product
+    );
 
   pad_proc : process (coefficient)
   begin

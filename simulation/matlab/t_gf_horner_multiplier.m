@@ -8,10 +8,12 @@ m = floor(log2(gf_poly));
 
 a = gf(2,m,gf_poly); %alpha
 
+ev = gf(randi([0 2^m-1],1,1),m,gf_poly);
+
 for i=0:10
     gfa = gf(randi([0,2^m-1]),m,gf_poly);
     gfb = gf(randi([0,2^m-1]),m,gf_poly);
-    gfc = a;    % change if the constant evaluation value is not a
+    gfc = ev; %a;    % change if the constant evaluation value is not a
     gfd = gfb*gfc+gfa;
     fprintf(file,'%i %i %i %i\n',gfa.x, gfb.x, gfc.x, gfd.x);
 end

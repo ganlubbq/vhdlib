@@ -56,7 +56,6 @@ begin
     generic map (
       GF_POLYNOMIAL   => GF_POLYNOMIAL,
       NO_OF_PAR_EVALS => NO_OF_CORR_ERRS,
-      SYNDROME_CALC   => FALSE,
       NO_OF_COEFS     => NO_OF_COEFS,
       SYMBOL_WIDTH    => M
     )

@@ -120,7 +120,6 @@ end rs_lfsr_encoder_tb;
 architecture gf_horner_evaluator_tb of vhdlib_tb is
   constant GF_POLYNOMIAL    : std_logic_vector := "10011"; -- irreducible, binary polynomial
   constant NO_OF_PAR_EVALS  : natural := 6;
-  constant SYNDROME_CALC    : boolean := TRUE;
   constant NO_OF_COEFS      : natural := 3;
   constant SYMBOL_WIDTH     : natural := 4;
   constant M                : natural := GF_POLYNOMIAL'length-1;
@@ -140,7 +139,6 @@ begin
   generic map (
     GF_POLYNOMIAL   => GF_POLYNOMIAL,
     NO_OF_PAR_EVALS => NO_OF_PAR_EVALS,
-    SYNDROME_CALC   => SYNDROME_CALC,
     NO_OF_COEFS     => NO_OF_COEFS,
     SYMBOL_WIDTH    => SYMBOL_WIDTH
   )
@@ -290,7 +288,6 @@ end gf_lookup_table_tb;
 architecture gf_horner_multiplier_tb of vhdlib_tb is
 
   constant GF_POLYNOMIAL : std_logic_vector := "10011";
-  constant PRIM_ELEM_POW : integer          := 0;
   constant SYMBOL_WIDTH  : integer          := 4;
   constant M             : integer          := GF_POLYNOMIAL'length-1;
 
@@ -304,7 +301,6 @@ begin
   dut : entity work.gf_horner_multiplier(rtl)
   generic map (
     GF_POLYNOMIAL => GF_POLYNOMIAL,
-    PRIM_ELEM_POW => PRIM_ELEM_POW,
     SYMBOL_WIDTH  => SYMBOL_WIDTH
   )
   port map (
@@ -333,7 +329,6 @@ begin
       product_in    <= std_logic_vector(to_unsigned(product_in_stm,M));
       wait for 1 ns;
       assert product_out = std_logic_vector(to_unsigned(product_out_stm,M)) report "ERROR!" severity error;
-      assert product_out /= std_logic_vector(to_unsigned(product_out_stm,M)) report "Correct output" severity note;
       wait for 1 ns;
     end loop;
     report "HAS ENDED!";
