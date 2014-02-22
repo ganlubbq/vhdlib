@@ -221,6 +221,96 @@ begin
 
 end gf_horner_evaluator_tb;
 
+-------------------------
+-- syndrome_calculator --
+-------------------------
+
+architecture syndrome_calculator_tb of vhdlib_tb is
+  constant GF_POLYNOMIAL    : std_logic_vector := "10011"; -- irreducible, binary polynomial
+  constant NO_OF_COEFS      : natural := 3;
+  constant NO_OF_SYNDROMES  : natural := 6;
+  constant M                : natural := GF_POLYNOMIAL'length-1;
+
+  signal clk          : std_logic;
+  signal rst          : std_logic;
+  signal clk_enable   : std_logic;
+  signal new_calc     : std_logic;
+  signal coefficients : std_logic_vector(NO_OF_COEFS*M-1 downto 0);
+  signal syndromes    : std_logic_vector(NO_OF_SYNDROMES*M-1 downto 0);
+
+begin
+
+  dut : entity work.syndrome_calculator(rtl)
+  generic map (
+    GF_POLYNOMIAL   => GF_POLYNOMIAL,
+    NO_OF_COEFS     => NO_OF_COEFS,
+    NO_OF_SYNDROMES => NO_OF_SYNDROMES
+  )
+  port map (
+    clk           => clk,
+    rst           => rst,
+    clk_enable    => clk_enable,
+    new_calc      => new_calc,
+    coefficients  => coefficients,
+    syndromes     => syndromes
+  );
+
+  clk_proc : process
+  begin
+    clk <= '0';
+    wait for 5 ns;
+    clk <= '1';
+    wait for 5 ns;
+  end process clk_proc;
+
+  stm_proc : process
+    variable rdline           : line;
+    variable new_calc_stm     : std_logic;
+    variable coefficient_stm  : integer;
+    variable syndrome_stm     : integer;
+    file vector_file          : text open read_mode is "t_syndrome_calculator.txt";
+  begin
+
+    new_calc      <= '0';
+    clk_enable    <= '0';
+    coefficients  <= (OTHERS => '0');
+    syndromes     <= (OTHERS => '0');
+
+    rst         <= '1';
+    wait for 6 ns;
+    rst         <= '0';
+    clk_enable  <= '1';
+
+    while not endfile(vector_file) loop
+      readline(vector_file, rdline);
+      read(rdline, new_calc_stm);
+      new_calc <= new_calc_stm;
+
+      for i in 0 to NO_OF_COEFS-1 loop
+        read(rdline, coefficient_stm);
+        coefficients(coefficients'high-i*M downto coefficients'length-(i+1)*M) <= std_logic_vector(to_unsigned(coefficient_stm,M));
+      end loop;
+
+      wait for 10 ns;
+
+      for i in 0 to NO_OF_SYNDROMES-1 loop
+        read(rdline, syndrome_stm);
+        assert syndromes(syndromes'high-i*M downto syndromes'length-(i+1)*M) = std_logic_vector(to_unsigned(syndrome_stm,M))
+          report "ERROR!" severity error;
+      end loop;
+
+    end loop;
+
+    new_calc      <= '0';
+    clk_enable    <= '0';
+    coefficients  <= (OTHERS => '0');
+    syndromes     <= (OTHERS => '0');
+    report "HAS ENDED!";
+    wait;
+  end process stm_proc;
+
+end syndrome_calculator_tb;
+
 ----------------------
 -- gf_lookup_table --
 ----------------------
