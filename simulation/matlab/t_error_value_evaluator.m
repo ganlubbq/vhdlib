@@ -78,12 +78,13 @@ for i=1:length(z0)
     tmpc = gf(cx(i:length(cx)),a.m,a.prim_poly);
     tmp = tmps.*tmpc;    
     for k=1:length(tmp)
-        z0(length(z0)+1-i) = z0(length(z0)+1-i) + tmp(k);
+%         z0(length(z0)+1-i) = z0(length(z0)+1-i) + tmp(k);
+        z0(i) = z0(i) + tmp(k);
     end
 end
 
 z0x = z0.x;
-fprintf(file,'%i ',[zeros(1,length(z0x)-lcx) z0x(1:lcx)]); % Error-value evaluator
+fprintf(file,'%i ',z0x); % Error-value evaluator
 fprintf(file,'\n');
 
 fclose(file);

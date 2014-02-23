@@ -16,6 +16,8 @@ add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/err_values_out
 add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/err_roots  
 add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/err_eval
 add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/err_eval_coefs
+add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/numerator_values
+add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/numerator_values_latch
 add wave -noupdate /vhdlib_tb/dut/calculator_state
 
 TreeUpdate [SetDefaultTree]

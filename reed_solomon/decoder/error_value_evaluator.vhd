@@ -33,16 +33,13 @@ architecture rtl of error_value_evaluator is
   constant GF_ZERO  : gf_elem := (OTHERS => '0');
   constant GF_ONE   : gf_elem := (0 => '1', OTHERS => '0');
 
-  -- TODO: give reasonable names to signals
-  signal n                : natural range 0 to NO_OF_SYNDROMES;
-  signal k                : natural range 0 to NO_OF_SYNDROMES;
-  signal shift_output     : std_logic;
-  signal err_eval_coef    : gf_elem;
-  signal mul_outputs      : gf_array_desc_t;
-  signal err_eval         : gf_array_desc_t;
-  signal err_locator      : gf_array_desc_t;
-  signal syndromes        : gf_array_desc_t;
-  signal calculator_state : calculator_state_t;
+  signal n                : natural range 1 to NO_OF_SYNDROMES; -- polynomial coefficient iterator
+  signal err_eval_coef    : gf_elem;                            -- polynomial coefficient
+  signal mul_outputs      : gf_array_desc_t;                    -- outputs from multipliers
+  signal err_eval         : gf_array_desc_t;                    -- error evaluator polynomial
+  signal err_locator      : gf_array_desc_t;                    -- error locator polynomial
+  signal syndromes        : gf_array_desc_t;                    -- syndrome values
+  signal calculator_state : calculator_state_t;                 -- state of module
 
 begin
 
@@ -70,9 +67,7 @@ begin
   clk_proc : process(clk, rst)
   begin
     if rst = '1' then
-      n                 <= 0;
-      k                 <= 0;
-      shift_output      <= '0';
+      n                 <= 1;
       syndromes         <= (OTHERS => GF_ZERO);
       err_locator       <= (OTHERS => GF_ZERO);
       err_eval          <= (OTHERS => GF_ZERO);
@@ -85,35 +80,24 @@ begin
       ready <= '0'; -- preassignment
 
       if calculator_state = CALCULATING then
-        -- increment iterator and shift syndromes 1 to the right
-        n                                       <= n + 1;
         syndromes(syndromes'high(1))            <= GF_ZERO;
         syndromes(syndromes'high(1)-1 downto 0) <= syndromes(syndromes'high(1) downto 1);
 
-        -- shift output one to the right as highest order term of error locator has not yet been encountered
-        if shift_output = '1' then
-          k <= k + 1;
-        end if;
-
-        -- highest order term of error locator encountered; stop shifting output
-        if err_locator(err_locator'high(1)-n) /= GF_ZERO then
-          shift_output  <= '1';
-        end if;
-
         -- store newly calculated coefficient of error-value evaluator
-        err_eval(k) <= err_eval_coef;
+        err_eval(NO_OF_SYNDROMES-n) <= err_eval_coef;
 
         -- check if iteration is over
-        if n = NO_OF_SYNDROMES-1 then
+        if n = NO_OF_SYNDROMES then
           calculator_state  <= IDLE;
+        else
+          -- increment iterator
+          n <= n + 1;
         end if;
       end if;
 
       -- if new input is given then reset calculation
       if new_calc = '1' then
-        n             <= 0;
-        k             <= 0;
-        shift_output  <= '0';
+        n <= 1;
 
         -- read in syndromes
         for i in syndromes'high(1) downto 0 loop

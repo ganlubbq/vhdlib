@@ -86,7 +86,8 @@ for i=1:lcx
     tmp = tmps.*tmpc;
 
     for k=1:length(tmp)
-        z0(length(z0)+1-i) = z0(length(z0)+1-i) + tmp(k);
+%         z0(length(z0)+1-i) = z0(length(z0)+1-i) + tmp(k);
+        z0(i) = z0(i) + tmp(k);
     end
 end
 
@@ -99,9 +100,9 @@ for i=1:length(er)
     eix = ei(i);
     for k=1:length(z0)
         zx = z0(k);
-        z0eval(i) = z0eval(i) + er(i)^(k-1)*z0(k);
+%         z0eval(i) = z0eval(i) + er(i)^(k-1)*z0(k);
+        z0eval(i) = z0eval(i) + er(i)^(k-1)*z0(length(z0)+1-k);
     end
-    zex = z0eval(i);
 end
 
 % denominator
@@ -124,8 +125,9 @@ end
 z0evalx = z0eval.x;
 z0x = z0.x;
 eix = ei.x;
+erx = er.x;
 
-fprintf(file,'%i ',[eix zeros(1,length(cx)-lcx) z0x]);
+fprintf(file,'%i ',[erx zeros(1,length(cx)-lcx) z0x]);
 fprintf(file,'\n');
 
 fclose(file);

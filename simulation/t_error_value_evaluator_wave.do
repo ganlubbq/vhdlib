@@ -15,7 +15,6 @@ add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/mul_outputs
 add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/err_eval_coef
 add wave -noupdate /vhdlib_tb/dut/calculator_state
 add wave -noupdate /vhdlib_tb/dut/n
-add wave -noupdate /vhdlib_tb/dut/k
 add wave -noupdate /vhdlib_tb/dut/shift_output
 
 TreeUpdate [SetDefaultTree]
