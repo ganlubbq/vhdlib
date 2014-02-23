@@ -128,7 +128,7 @@ architecture gf_horner_evaluator_tb of vhdlib_tb is
   signal rst            : std_logic;
   signal clk_enable     : std_logic;
   signal new_calc       : std_logic;
-  signal coefficients   : std_logic_vector(SYMBOL_WIDTH*NO_OF_COEFS-1 downto 0);
+  signal coefficients   : std_logic_vector(NO_OF_COEFS*SYMBOL_WIDTH-1 downto 0);
   signal eval_values    : std_logic_vector(NO_OF_PAR_EVALS*M-1 downto 0);
   signal start_values   : std_logic_vector(NO_OF_PAR_EVALS*M-1 downto 0);
   signal result_values  : std_logic_vector(NO_OF_PAR_EVALS*M-1 downto 0);
@@ -274,7 +274,6 @@ begin
     new_calc      <= '0';
     clk_enable    <= '0';
     coefficients  <= (OTHERS => '0');
-    syndromes     <= (OTHERS => '0');
 
     rst         <= '1';
     wait for 6 ns;
@@ -304,7 +303,6 @@ begin
     new_calc      <= '0';
     clk_enable    <= '0';
     coefficients  <= (OTHERS => '0');
-    syndromes     <= (OTHERS => '0');
     report "HAS ENDED!";
     wait;
   end process stm_proc;

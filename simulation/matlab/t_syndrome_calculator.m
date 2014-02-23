@@ -23,7 +23,7 @@ ev = a.^(1:ns); % evaluation values (powers of alpha element)
 
 % iterate over coefficients
 for i=1:length(c)
-    if mod(i,no_of_coefs) == 1
+    if mod(i,no_of_coefs) == 1 || no_of_coefs == 1
       fprintf(file,'%i',new_calc);
       new_calc = 0;
     end

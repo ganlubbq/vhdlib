@@ -21,7 +21,7 @@ entity gf_horner_evaluator is
     rst           : in  std_logic;
     clk_enable    : in  std_logic;
     new_calc      : in  std_logic;
-    coefficients  : in  std_logic_vector(SYMBOL_WIDTH*NO_OF_COEFS-1 downto 0);                  -- polynomial coefficients; highest order symbol on MSBs, descending
+    coefficients  : in  std_logic_vector(NO_OF_COEFS*SYMBOL_WIDTH-1 downto 0);                  -- polynomial coefficients; highest order symbol on MSBs, descending
     eval_values   : in  std_logic_vector(NO_OF_PAR_EVALS*(GF_POLYNOMIAL'length-1)-1 downto 0);
     start_values  : in  std_logic_vector(NO_OF_PAR_EVALS*(GF_POLYNOMIAL'length-1)-1 downto 0);
     result_values : out std_logic_vector(NO_OF_PAR_EVALS*(GF_POLYNOMIAL'length-1)-1 downto 0)

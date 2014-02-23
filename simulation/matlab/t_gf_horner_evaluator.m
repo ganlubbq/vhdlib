@@ -18,12 +18,13 @@ c = c(length(c):-1:1); % reverse
 cx = c.x;
 
 rv = gf(zeros(1,ne),m,gf_poly); % result_values
-ev = gf(randi([0 2^m-1],1,ne),m,gf_poly); % a.^(1:ne);
+ev = gf(randi([0 2^m-1],1,ne),m,gf_poly); 
+% ev = a.^(1:ne);
 
 
 % iterate over coefficients
 for i=1:length(c)
-    if mod(i,no_of_symbols) == 1
+    if mod(i,no_of_symbols) == 1 || no_of_symbols == 1
       fprintf(file,'%i',new_calc);
       new_calc = 0;
     end
