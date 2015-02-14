@@ -38,7 +38,7 @@ package vhdlib_package is
   ---------------------------
 
   -- XOR reduction of bit vector
-  pure function xor_reduce  (vector_to_reduce : std_logic_vector)
+  pure function xor_reduce (vector_to_reduce : std_logic_vector)
     return std_logic;
 
   -- return remainder of binary polynomial division
@@ -57,8 +57,8 @@ package vhdlib_package is
     return std_logic_vector;
 
   -- multiplication of binary matrix
-  pure function binary_matrix_multiply  (binary_matrix_a : binary_matrix_t;
-                                         binary_matrix_b : binary_matrix_t)
+  pure function binary_matrix_multiply (binary_matrix_a : binary_matrix_t;
+                                        binary_matrix_b : binary_matrix_t)
     return binary_matrix_t;
 
   -- exponentiation of binary matrix
@@ -207,8 +207,8 @@ package body vhdlib_package is
   -- A binary matrix of size equal to first dimension of
   -- binary_matrix_a and second dimension of binary_matrix_b.
   --
-  pure function binary_matrix_multiply  (binary_matrix_a : binary_matrix_t;
-                                         binary_matrix_b : binary_matrix_t)
+  pure function binary_matrix_multiply (binary_matrix_a : binary_matrix_t;
+                                        binary_matrix_b : binary_matrix_t)
     return binary_matrix_t is
     variable result : binary_matrix_t(binary_matrix_a'range(1), binary_matrix_b'range(2));
   begin

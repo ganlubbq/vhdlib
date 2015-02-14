@@ -14,9 +14,9 @@ entity crc_generator_parallel is
     DATA_WIDTH : natural          := 8
   );
   port (
-    crc_in   : in  std_logic_vector(POLYNOMIAL'length-2 downto 0);
-    data_in   : in  std_logic_vector(DATA_WIDTH-1 downto 0);
-    crc_out  : out std_logic_vector(POLYNOMIAL'length-2 downto 0)
+    crc_in  : in  std_logic_vector(POLYNOMIAL'length-2 downto 0);
+    data_in : in  std_logic_vector(DATA_WIDTH-1 downto 0);
+    crc_out : out std_logic_vector(POLYNOMIAL'length-2 downto 0)
   );
 
 end entity;
