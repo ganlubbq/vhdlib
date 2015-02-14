@@ -37,6 +37,12 @@ package vhdlib_package is
   -- FUNCTION DECLARATIONS --
   ---------------------------
 
+  -- Galois Field multiplication
+  pure function gf_multiply (multiplicand_a : std_logic_vector;
+                             multiplicand_b : std_logic_vector;
+                             gf_polynomial : std_logic_vector)
+    return std_logic_vector;
+
   -- XOR reduction of bit vector
   pure function xor_reduce (vector_to_reduce : std_logic_vector)
     return std_logic;
@@ -74,6 +80,53 @@ package body vhdlib_package is
   --------------------------
   -- FUNCTION DEFINITIONS --
   --------------------------
+
+  --
+  -- Function:
+  -- gf_multiply
+  --
+  -- Description:
+  -- Multiplication of Galois Field elements.
+  --
+  -- Input:
+  -- multiplicand_a : First Galois field multiplicand
+  -- multiplicand_b : Second Galois field multiplicand
+  -- gf_polynomial  : Irreducible, binary polynomial defining the Galois field
+  --
+  -- Output:
+  -- The product of the two Galois field multiplicands
+  --
+  pure function gf_multiply (multiplicand_a : std_logic_vector;
+                             multiplicand_b : std_logic_vector;
+                             gf_polynomial : std_logic_vector)
+    return std_logic_vector is
+
+    constant M  : natural := gf_polynomial'length-1;
+    constant PX : std_logic_vector(M downto 0) := gf_polynomial; -- Make sure polynomial range is descending
+
+    type m_times_m_matrix is array(M-1 downto 0) of std_logic_vector(M-1 downto 0);
+    variable result_matrix : m_times_m_matrix;
+  begin
+    for i in multiplicand_a'range loop
+      for j in multiplicand_b'range loop
+
+        if i = M-1 then
+          result_matrix(i)(j) := multiplicand_a(j) AND multiplicand_b(i);
+        end if;
+
+        if i < M-1 and j = 0 then
+          result_matrix(i)(j) := (multiplicand_a(j) AND multiplicand_b(i)) XOR (PX(j) AND result_matrix(i+1)(M-1));
+        end if;
+
+        if i < M-1 and j > 0 then
+          result_matrix(i)(j) := (multiplicand_a(j) AND multiplicand_b(i)) XOR (PX(j) AND result_matrix(i+1)(M-1)) XOR result_matrix(i+1)(j-1);
+        end if;
+
+      end loop;
+    end loop;
+
+    return result_matrix(0)(M-1 downto 0);
+  end;
 
   --
   -- Function:
