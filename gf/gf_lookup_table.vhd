@@ -25,7 +25,7 @@ end entity;
 architecture rtl of gf_lookup_table is
   constant M      : natural := GF_POLYNOMIAL'length-1;
 
-  -- ROM table type
+  -- look-up table type
   type table_t is array(0 to 2**M-1) of std_logic_vector(M-1 downto 0);
 
   -- function to generate table contents

@@ -22,7 +22,7 @@ package vhdlib_package is
   constant G709_GF_POLY       : std_logic_vector  := "100011101";
   constant G975_I10_GF_POLY   : std_logic_vector  := "10000001001";
 
-  -- lookup table types
+  -- look-up table types
   constant INV_TABLE_TYPE       : string  := "INVERSE";
   constant LOG_TABLE_TYPE       : string  := "LOGARITHM";
   constant EXP_TABLE_TYPE       : string  := "EXPONENT";
@@ -196,14 +196,18 @@ package body vhdlib_package is
     return bin_matrix_t is
     variable ret_mat  : bin_matrix_t(bin_mat_a'range(1), bin_mat_b'range(2));
   begin
+    -- number of columns in bin_mat_a must equal number of rows in bin_mat_b
     assert bin_mat_a'length(2) = bin_mat_b'length(1)
       report "Dimensions of matrices to multiply do not match!"
       severity failure;
 
     ret_mat := (OTHERS => (OTHERS => '0'));
 
+    -- k iterates over rows of bin_mat_a
     for k in bin_mat_a'range(1) loop
+      -- i iterates over columns of bin_mat_a
       for i in bin_mat_a'range(2) loop
+        -- j iterates over columns of bin_mat_b
         for j in bin_mat_b'range(2) loop
           ret_mat(k,i)  := ret_mat(k,i) XOR (bin_mat_a(k,j) AND bin_mat_b(j,i));
         end loop;
