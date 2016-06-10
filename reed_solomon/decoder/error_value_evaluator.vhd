@@ -47,7 +47,7 @@ begin
   -- Component instantiations --
   ------------------------------
 
-  multipliers : for i in err_eval'range(1) generate -- TODO: could range be decreased? (length of error locator poly always <= NO_OF_CORR_ERRS+1?)
+  multipliers : for i in err_eval'range(1) generate
   begin
     multiplier : entity work.gf_multiplier(rtl)
       generic map (
@@ -86,19 +86,16 @@ begin
         -- store newly calculated coefficient of error-value evaluator
         err_eval(NO_OF_SYNDROMES-n) <= err_eval_coef;
 
-        -- check if iteration is over
+        -- check whether iteration should continue
         if n = NO_OF_SYNDROMES then
           calculator_state  <= IDLE;
         else
-          -- increment iterator
           n <= n + 1;
         end if;
       end if;
 
       -- if new input is given then reset calculation
       if new_calc = '1' then
-        n <= 1;
-
         -- read in syndromes
         for i in syndromes'high(1) downto 0 loop
           syndromes(i) <= syndromes_in((i+1)*M-1 downto i*M);
@@ -109,7 +106,8 @@ begin
           err_locator(i) <= err_locator_in((i+1)*M-1 downto i*M);
         end loop;
 
-        calculator_state <= CALCULATING;
+        n                 <= 1;
+        calculator_state  <= CALCULATING;
       end if;
 
       -- set output and ready when calculation is over
