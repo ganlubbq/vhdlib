@@ -2,7 +2,7 @@ onerror {resume}
 
 quietly WaveActivateNextPane {} 0
 add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/crc_in
-add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/dat_in
+add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/data_in
 add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/crc_out
 
 TreeUpdate [SetDefaultTree]
