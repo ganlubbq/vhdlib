@@ -138,9 +138,9 @@ begin
       end if;
 
       if root_found = '1' then
-        error_roots(k)      <= gf_element_exp_out;
-        error_locations(k)  <= gf_element_inv_out;
-        error_symbol_locations(k)  <= root_n;
+        error_roots(k) <= gf_element_exp_out;
+        error_locations(k) <= gf_element_inv_out;
+        error_symbol_locations(k) <= root_n;
 
         if k < NO_OF_CORR_ERRS-1 then
           k <= k + 1;
