@@ -1,17 +1,17 @@
 onerror {resume}
 
 quietly WaveActivateNextPane {} 0
-add wave -noupdate /vhdlib_tb/dut/clk
-add wave -noupdate /vhdlib_tb/dut/rst
-add wave -noupdate /vhdlib_tb/dut/som
-add wave -noupdate -radix unsigned /vhdlib_tb/dut/msg
-add wave -noupdate /vhdlib_tb/dut/soc
-add wave -noupdate /vhdlib_tb/dut/eoc
-add wave -noupdate -radix unsigned /vhdlib_tb/dut/cw
+add wave -noupdate /vhdlib_tb/dut/clock
+add wave -noupdate /vhdlib_tb/dut/reset
+add wave -noupdate /vhdlib_tb/dut/start_of_message
+add wave -noupdate -radix unsigned /vhdlib_tb/dut/message
+add wave -noupdate /vhdlib_tb/dut/start_of_codeword
+add wave -noupdate /vhdlib_tb/dut/end_of_codeword
+add wave -noupdate -radix unsigned /vhdlib_tb/dut/codeword
 add wave -noupdate -radix unsigned /vhdlib_tb/dut/mul_out
 add wave -noupdate -radix unsigned /vhdlib_tb/dut/gf_regs
 add wave -noupdate -radix unsigned /vhdlib_tb/dut/gf_regs_fb
-add wave -noupdate -radix unsigned /vhdlib_tb/dut/msg_xor
+add wave -noupdate -radix unsigned /vhdlib_tb/dut/message_xor
 add wave -noupdate -radix unsigned /vhdlib_tb/dut/codeword_cnt
 
 TreeUpdate [SetDefaultTree]

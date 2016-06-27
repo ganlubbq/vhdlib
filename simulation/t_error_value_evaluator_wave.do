@@ -1,21 +1,20 @@
 onerror {resume}
 
 quietly WaveActivateNextPane {} 0
-add wave -noupdate /vhdlib_tb/dut/clk
-add wave -noupdate /vhdlib_tb/dut/rst
-add wave -noupdate /vhdlib_tb/dut/new_calc
+add wave -noupdate /vhdlib_tb/dut/clock
+add wave -noupdate /vhdlib_tb/dut/reset
+add wave -noupdate /vhdlib_tb/dut/new_calculation
 add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/syndromes_in
-add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/err_locator_in
+add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/error_locator_in
 add wave -noupdate /vhdlib_tb/dut/ready
-add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/err_eval_out
+add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/error_eval_out
 add wave -noupdate -radix unsigned /vhdlib_tb/dut/syndromes
-add wave -noupdate -radix unsigned /vhdlib_tb/dut/err_locator
-add wave -noupdate -radix unsigned /vhdlib_tb/dut/err_eval
+add wave -noupdate -radix unsigned /vhdlib_tb/dut/error_locator
+add wave -noupdate -radix unsigned /vhdlib_tb/dut/error_eval
 add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/mul_outputs
-add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/err_eval_coef
+add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/error_eval_coef
 add wave -noupdate /vhdlib_tb/dut/calculator_state
 add wave -noupdate /vhdlib_tb/dut/n
-add wave -noupdate /vhdlib_tb/dut/shift_output
 
 TreeUpdate [SetDefaultTree]
 

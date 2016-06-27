@@ -1,12 +1,12 @@
 onerror {resume}
 
 quietly WaveActivateNextPane {} 0
-add wave -noupdate /vhdlib_tb/dut/clk
-add wave -noupdate /vhdlib_tb/dut/rst
-add wave -noupdate /vhdlib_tb/dut/new_calc
+add wave -noupdate /vhdlib_tb/dut/clock
+add wave -noupdate /vhdlib_tb/dut/reset
+add wave -noupdate /vhdlib_tb/dut/new_calculation
 add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/syndromes_in
 add wave -noupdate /vhdlib_tb/dut/ready
-add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/err_locator_out
+add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/error_locator_out
 add wave -noupdate -radix unsigned /vhdlib_tb/dut/syndromes
 add wave -noupdate -radix unsigned /vhdlib_tb/dut/d
 add wave -noupdate -radix unsigned /vhdlib_tb/dut/d_d_prev_inv

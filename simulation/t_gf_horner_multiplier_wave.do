@@ -1,7 +1,8 @@
 onerror {resume}
 
 quietly WaveActivateNextPane {} 0
-add wave -noupdate -radix unsigned /vhdlib_tb/dut/symbol
+add wave -noupdate -radix unsigned /vhdlib_tb/dut/coefficient
+add wave -noupdate -radix unsigned /vhdlib_tb/dut/eval_value
 add wave -noupdate -radix unsigned /vhdlib_tb/dut/product_in
 add wave -noupdate -radix unsigned /vhdlib_tb/dut/product_out
 
