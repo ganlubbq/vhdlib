@@ -15,13 +15,13 @@ entity chien_search is
     NO_OF_SYNDROMES : natural           := 6
   );
   port (
-    clk               : in  std_logic;
-    rst               : in  std_logic;
-    new_calc          : in  std_logic;
-    err_locator_in    : in  std_logic_vector(NO_OF_SYNDROMES*(GF_POLYNOMIAL'length-1)-1 downto 0);  -- highest order coefficient at MSBs, descending
+    clock               : in  std_logic;
+    reset               : in  std_logic;
+    new_calculation          : in  std_logic;
+    error_locator_in    : in  std_logic_vector(NO_OF_SYNDROMES*(GF_POLYNOMIAL'length-1)-1 downto 0);  -- highest order coefficient at MSBs, descending
     ready             : out std_logic;                                                              -- when '1' the module is ready for new input and any possible output from the previous calculation can be read
-    err_roots_out     : out std_logic_vector(NO_OF_CORR_ERRS*(GF_POLYNOMIAL'length-1)-1 downto 0);
-    err_locations_out : out std_logic_vector(NO_OF_CORR_ERRS*(GF_POLYNOMIAL'length-1)-1 downto 0);
+    error_roots_out     : out std_logic_vector(NO_OF_CORR_ERRS*(GF_POLYNOMIAL'length-1)-1 downto 0);
+    error_locations_out : out std_logic_vector(NO_OF_CORR_ERRS*(GF_POLYNOMIAL'length-1)-1 downto 0);
     sym_locations_out : out std_logic_vector(NO_OF_CORR_ERRS*(GF_POLYNOMIAL'length-1)-1 downto 0)   -- locations of erroneous symbols in codeword
   );
 end entity;
@@ -37,21 +37,21 @@ architecture rtl of chien_search is
   constant GF_ZERO        : gf_elem := (OTHERS => '0');
   constant GF_MAX         : gf_elem := (OTHERS => '1');
 
-  signal gammas           : gf_array_desc_t;                      -- polynomail terms of last evaluation
-  signal gammas_new       : gf_array_desc_t;                      -- polynomial terms of current evaluation
-  signal gammas_sum       : gf_elem;                              -- sum of polynomial terms
-  signal err_roots        : gf_output_values_t;                   -- output array of error locator roots
-  signal err_locations    : gf_output_values_t;                   -- output array of error locations
-  signal sym_locations    : gf_output_values_t;                   -- output array of error symbol locations
-  signal k                : natural range 0 to NO_OF_CORR_ERRS-1; -- counter for found polynomial roots
-  signal i                : unsigned(M-1 downto 0);               -- power of the primitive element, that the polynomial is evaluated over (i.e. a^i)
-  signal calculator_state : calculator_state_t;
-  signal root_found       : std_logic;
-  signal root_n           : gf_elem;                              -- error symbol location: found root of polynomial
-  signal gf_elem_exp_in   : gf_elem;                              -- same as signal i, but cast to type gf_elem
-  signal gf_elem_inv_in   : gf_elem;                              -- power of element which is inverse to a^i: 2^M-1-i
-  signal gf_elem_exp_out  : gf_elem;                              -- error root: value of a^i
-  signal gf_elem_inv_out  : gf_elem;                              -- error location: value of inverse element of a^i = a^(2^M-1-i)
+  signal gammas                 : gf_array_desc_t;                      -- polynomail terms of last evaluation
+  signal gammas_new             : gf_array_desc_t;                      -- polynomial terms of current evaluation
+  signal gammas_sum             : gf_elem;                              -- sum of polynomial terms
+  signal error_roots            : gf_output_values_t;                   -- output array of error locator roots
+  signal error_locations        : gf_output_values_t;                   -- output array of error locations
+  signal error_symbol_locations : gf_output_values_t;                   -- output array of error symbol locations
+  signal k                      : natural range 0 to NO_OF_CORR_ERRS-1; -- counter for found polynomial roots
+  signal i                      : unsigned(M-1 downto 0);               -- power of the primitive element, that the polynomial is evaluated over (i.e. a^i)
+  signal calculator_state       : calculator_state_t;
+  signal root_found             : std_logic;
+  signal root_n                 : gf_elem;                              -- error symbol location: found root of polynomial
+  signal gf_element_exp_in      : gf_elem;                              -- same as signal i, but cast to type gf_elem
+  signal gf_element_inv_in      : gf_elem;                              -- power of element which is inverse to a^i: 2^M-1-i
+  signal gf_element_exp_out     : gf_elem;                              -- error root: value of a^i
+  signal gf_element_inv_out     : gf_elem;                              -- error location: value of inverse element of a^i = a^(2^M-1-i)
 
 begin
 
@@ -63,9 +63,9 @@ begin
         GF_POLYNOMIAL => GF_POLYNOMIAL
       )
       port map (
-        mul_a     => prim_elem_exp(j,GF_POLYNOMIAL),  -- primitive element to the jth power
-        mul_b     => gammas(j),                       -- jth term of last polynomial evaluation
-        product   => gammas_new(j)                    -- jth term of current polynomial evaluation
+        mul_a     => primitive_element_exponentiation(j,GF_POLYNOMIAL), -- primitive element to the jth power
+        mul_b     => gammas(j),                                         -- jth term of last polynomial evaluation
+        product   => gammas_new(j)                                      -- jth term of current polynomial evaluation
       );
   end generate gen_coef_multipliers;
 
@@ -76,44 +76,43 @@ begin
       TABLE_TYPE      => EXP_TABLE_TYPE
     )
     port map (
-      clk             => clk,
-      elem_in_a       => gf_elem_exp_in,
-      elem_in_b       => gf_elem_inv_in,
-      elem_out_a      => gf_elem_exp_out,
-      elem_out_b      => gf_elem_inv_out
+      clock             => clock,
+      element_in_a       => gf_element_exp_in,
+      element_in_b       => gf_element_inv_in,
+      element_out_a      => gf_element_exp_out,
+      element_out_b      => gf_element_inv_out
     );
 
-  gf_elem_exp_in  <= std_logic_vector(i);
-  gf_elem_inv_in  <= GF_MAX xor std_logic_vector(i);
+  gf_element_exp_in  <= std_logic_vector(i);
+  gf_element_inv_in  <= GF_MAX xor std_logic_vector(i);
 
-  clk_proc : process (clk, rst)
+  clock_proc : process (clock, reset)
   begin
-    if rst = '1' then
+    if reset = '1' then
       gammas            <= (OTHERS => GF_ZERO);
-      err_roots         <= (OTHERS => GF_ZERO);
-      err_locations     <= (OTHERS => GF_ZERO);
-      sym_locations     <= (OTHERS => GF_ZERO);
+      error_roots         <= (OTHERS => GF_ZERO);
+      error_locations     <= (OTHERS => GF_ZERO);
+      error_symbol_locations     <= (OTHERS => GF_ZERO);
       k                 <= 0;
       i                 <= (OTHERS => '0');
       root_n            <= (OTHERS => '0');
       calculator_state  <= IDLE;
       root_found        <= '0';
-    elsif rising_edge(clk) then
-      -- preassignments
+    elsif rising_edge(clock) then
       root_found        <= '0';
 
-      if new_calc = '1' then
-        k                 <= 0;                   -- zero roots found
-        i                 <= (OTHERS => '0');     -- start search with polynomial evaluation over a^0
-        root_n            <= (OTHERS => '0');
-        calculator_state  <= CALCULATING;
-        err_roots         <= (OTHERS => GF_ZERO);
-        err_locations     <= (OTHERS => GF_ZERO);
-        sym_locations     <= (OTHERS => GF_ZERO);
+      if new_calculation = '1' then
+        k                       <= 0;                   -- zero roots found
+        i                       <= (OTHERS => '0');     -- start search with polynomial evaluation over a^0
+        root_n                  <= (OTHERS => '0');
+        calculator_state        <= CALCULATING;
+        error_roots             <= (OTHERS => GF_ZERO);
+        error_locations         <= (OTHERS => GF_ZERO);
+        error_symbol_locations  <= (OTHERS => GF_ZERO);
 
         for j in NO_OF_CORR_ERRS downto 0 loop
           -- read in coefficients of error locator polynomial
-          gammas(j) <= err_locator_in((j+1)*M-1 downto j*M);
+          gammas(j) <= error_locator_in((j+1)*M-1 downto j*M);
         end loop;
       end if;
 
@@ -135,14 +134,13 @@ begin
           end if;
         end if;
 
-        -- set new gamma values
         gammas  <= gammas_new;
       end if;
 
       if root_found = '1' then
-        err_roots(k)      <= gf_elem_exp_out;
-        err_locations(k)  <= gf_elem_inv_out;
-        sym_locations(k)  <= root_n;
+        error_roots(k)      <= gf_element_exp_out;
+        error_locations(k)  <= gf_element_inv_out;
+        error_symbol_locations(k)  <= root_n;
 
         if k < NO_OF_CORR_ERRS-1 then
           k <= k + 1;
@@ -150,14 +148,14 @@ begin
       end if;
 
     end if;
-  end process clk_proc;
+  end process clock_proc;
 
   comb_proc : process( gammas,
-                       err_roots,
-                       err_locations,
-                       sym_locations,
+                       error_roots,
+                       error_locations,
+                       error_symbol_locations,
                        calculator_state,
-                       rst
+                       reset
                      )
     variable var_gammas_sum   : gf_elem;
   begin
@@ -170,12 +168,12 @@ begin
 
     -- output calculated values
     for j in NO_OF_CORR_ERRS-1 downto 0 loop
-      err_roots_out((j+1)*M-1 downto j*M)     <= err_roots(j);
-      err_locations_out((j+1)*M-1 downto j*M) <= err_locations(j);
-      sym_locations_out((j+1)*M-1 downto j*M) <= sym_locations(j);
+      error_roots_out((j+1)*M-1 downto j*M)     <= error_roots(j);
+      error_locations_out((j+1)*M-1 downto j*M) <= error_locations(j);
+      sym_locations_out((j+1)*M-1 downto j*M)   <= error_symbol_locations(j);
     end loop;
 
-    if calculator_state = IDLE and rst = '0' then
+    if calculator_state = IDLE and reset = '0' then
       ready <= '1';
     else
       ready <= '0';

@@ -15,11 +15,11 @@ entity gf_lookup_table_dp is
     TABLE_TYPE      : string           := INV_TABLE_TYPE
   );
   port (
-    clk             : in  std_logic;
-    elem_in_a       : in  std_logic_vector(GF_POLYNOMIAL'length-2 downto 0);
-    elem_in_b       : in  std_logic_vector(GF_POLYNOMIAL'length-2 downto 0);
-    elem_out_a      : out std_logic_vector(GF_POLYNOMIAL'length-2 downto 0);
-    elem_out_b      : out std_logic_vector(GF_POLYNOMIAL'length-2 downto 0)
+    clock             : in  std_logic;
+    element_in_a       : in  std_logic_vector(GF_POLYNOMIAL'length-2 downto 0);
+    element_in_b       : in  std_logic_vector(GF_POLYNOMIAL'length-2 downto 0);
+    element_out_a      : out std_logic_vector(GF_POLYNOMIAL'length-2 downto 0);
+    element_out_b      : out std_logic_vector(GF_POLYNOMIAL'length-2 downto 0)
   );
 
 end entity;
@@ -31,9 +31,9 @@ architecture rtl of gf_lookup_table_dp is
   type table_t is array(0 to 2**M-1) of std_logic_vector(M-1 downto 0);
 
   -- function to generate table contents
-  function gen_table return table_t is
-    variable index_elem     : std_logic_vector(M-1 downto 0);
-    variable value_elem     : std_logic_vector(M-1 downto 0);
+  function generate_table return table_t is
+    variable index_element     : std_logic_vector(M-1 downto 0);
+    variable value_element     : std_logic_vector(M-1 downto 0);
     variable tmp_log_table  : table_t;
     variable ret            : table_t;
   begin
@@ -43,9 +43,9 @@ architecture rtl of gf_lookup_table_dp is
       ret(1)  := std_logic_vector(to_unsigned(1,M));  -- 1 = 1*1
 
       for i in 1 to 2**M-2 loop
-        index_elem  := prim_elem_exp(i, GF_POLYNOMIAL);         -- alpha^i
-        value_elem  := prim_elem_exp(2**M-1-i, GF_POLYNOMIAL);  -- alpha^(2^M-1-i)
-        ret(to_integer(unsigned(index_elem))) := value_elem;    -- alpha^i -> alpha^(2^M-1-i)
+        index_element  := primitive_element_exponentiation(i, GF_POLYNOMIAL);         -- alpha^i
+        value_element  := primitive_element_exponentiation(2**M-1-i, GF_POLYNOMIAL);  -- alpha^(2^M-1-i)
+        ret(to_integer(unsigned(index_element))) := value_element;    -- alpha^i -> alpha^(2^M-1-i)
       end loop;
     end if;
 
@@ -53,17 +53,17 @@ architecture rtl of gf_lookup_table_dp is
       ret(0)  := (OTHERS => '0'); -- logarithm of 0 not defined
 
       for i in 0 to 2**M-2 loop
-        index_elem  := prim_elem_exp(i, GF_POLYNOMIAL);       -- alpha^i
-        value_elem  := std_logic_vector(to_unsigned(i,M));    -- i
-        ret(to_integer(unsigned(index_elem))) := value_elem;  -- alpha^i -> i
+        index_element  := primitive_element_exponentiation(i, GF_POLYNOMIAL);       -- alpha^i
+        value_element  := std_logic_vector(to_unsigned(i,M));    -- i
+        ret(to_integer(unsigned(index_element))) := value_element;  -- alpha^i -> i
       end loop;
     end if;
 
     if TABLE_TYPE = EXP_TABLE_TYPE then
       for i in 0 to 2**M-1 loop
-        index_elem  := std_logic_vector(to_unsigned(i,M));    -- i
-        value_elem  := prim_elem_exp(i, GF_POLYNOMIAL);       -- alpha^i
-        ret(to_integer(unsigned(index_elem))) := value_elem;  -- i -> alpha^i
+        index_element  := std_logic_vector(to_unsigned(i,M));    -- i
+        value_element  := primitive_element_exponentiation(i, GF_POLYNOMIAL);       -- alpha^i
+        ret(to_integer(unsigned(index_element))) := value_element;  -- i -> alpha^i
       end loop;
     end if;
 
@@ -72,9 +72,9 @@ architecture rtl of gf_lookup_table_dp is
       tmp_log_table(0)  := (OTHERS => '0'); -- logarithm of 0 not defined
 
       for i in 0 to 2**M-2 loop
-        index_elem  := prim_elem_exp(i, GF_POLYNOMIAL);                 -- alpha^i
-        value_elem  := std_logic_vector(to_unsigned(i,M));              -- i
-        tmp_log_table(to_integer(unsigned(index_elem))) := value_elem;  -- alpha^i -> i
+        index_element  := primitive_element_exponentiation(i, GF_POLYNOMIAL);                 -- alpha^i
+        value_element  := std_logic_vector(to_unsigned(i,M));              -- i
+        tmp_log_table(to_integer(unsigned(index_element))) := value_element;  -- alpha^i -> i
       end loop;
 
       -- now generate the actual Zech's logarithm table
@@ -83,25 +83,25 @@ architecture rtl of gf_lookup_table_dp is
 
       -- calculate alpha^i + 1 and look up log(alpha^i + 1) in the temporary table
       for i in 1 to 2**M-2 loop
-        index_elem    := std_logic_vector(to_unsigned(i,M));              -- i
-        value_elem    := prim_elem_exp(i, GF_POLYNOMIAL);                 -- alpha^i
-        value_elem(0) := value_elem(0) xor '1';                           -- alpha^i + 1
-        value_elem    := tmp_log_table(to_integer(unsigned(value_elem))); -- log(alpha^i + 1)
-        ret(to_integer(unsigned(index_elem))) := value_elem;              -- i -> log(alpha^i + 1)
+        index_element    := std_logic_vector(to_unsigned(i,M));              -- i
+        value_element    := primitive_element_exponentiation(i, GF_POLYNOMIAL);                 -- alpha^i
+        value_element(0) := value_element(0) xor '1';                           -- alpha^i + 1
+        value_element    := tmp_log_table(to_integer(unsigned(value_element))); -- log(alpha^i + 1)
+        ret(to_integer(unsigned(index_element))) := value_element;              -- i -> log(alpha^i + 1)
       end loop;
     end if;
 
     return ret;
-  end function gen_table;
+  end function generate_table;
 
-  constant table  : table_t := gen_table;
+  constant table  : table_t := generate_table;
 
 begin
-  process(clk)
+  process(clock)
   begin
-    if rising_edge(clk) then
-      elem_out_a <= table(to_integer(unsigned(elem_in_a)));
-      elem_out_b <= table(to_integer(unsigned(elem_in_b)));
+    if rising_edge(clock) then
+      element_out_a <= table(to_integer(unsigned(element_in_a)));
+      element_out_b <= table(to_integer(unsigned(element_in_b)));
     end if;
   end process;
 end rtl;

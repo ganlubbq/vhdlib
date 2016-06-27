@@ -13,12 +13,12 @@ entity error_value_evaluator is
     NO_OF_SYNDROMES : natural           := 6
   );
   port (
-    clk             : in  std_logic;
-    rst             : in  std_logic;
-    new_calc        : in  std_logic;
+    clock             : in  std_logic;
+    reset             : in  std_logic;
+    new_calculation        : in  std_logic;
     syndromes_in    : in  std_logic_vector(NO_OF_SYNDROMES*(GF_POLYNOMIAL'length-1)-1 downto 0);  -- lowest order syndrome at MSBs, ascending
-    err_locator_in  : in  std_logic_vector(NO_OF_SYNDROMES*(GF_POLYNOMIAL'length-1)-1 downto 0);  -- highest order coefficient at MSBs, descending
-    err_eval_out    : out std_logic_vector(NO_OF_SYNDROMES*(GF_POLYNOMIAL'length-1)-1 downto 0);  -- highest order coefficient at MSBs, descending
+    error_locator_in  : in  std_logic_vector(NO_OF_SYNDROMES*(GF_POLYNOMIAL'length-1)-1 downto 0);  -- highest order coefficient at MSBs, descending
+    error_eval_out    : out std_logic_vector(NO_OF_SYNDROMES*(GF_POLYNOMIAL'length-1)-1 downto 0);  -- highest order coefficient at MSBs, descending
     ready           : out std_logic
   );
 end entity;
@@ -34,10 +34,10 @@ architecture rtl of error_value_evaluator is
   constant GF_ONE   : gf_elem := (0 => '1', OTHERS => '0');
 
   signal n                : natural range 1 to NO_OF_SYNDROMES; -- polynomial coefficient iterator
-  signal err_eval_coef    : gf_elem;                            -- polynomial coefficient
+  signal error_eval_coef    : gf_elem;                            -- polynomial coefficient
   signal mul_outputs      : gf_array_desc_t;                    -- outputs from multipliers
-  signal err_eval         : gf_array_desc_t;                    -- error evaluator polynomial
-  signal err_locator      : gf_array_desc_t;                    -- error locator polynomial
+  signal error_eval         : gf_array_desc_t;                    -- error evaluator polynomial
+  signal error_locator      : gf_array_desc_t;                    -- error locator polynomial
   signal syndromes        : gf_array_desc_t;                    -- syndrome values
   signal calculator_state : calculator_state_t;                 -- state of module
 
@@ -47,7 +47,7 @@ begin
   -- Component instantiations --
   ------------------------------
 
-  multipliers : for i in err_eval'range(1) generate
+  multipliers : for i in error_eval'range(1) generate
   begin
     multiplier : entity work.gf_multiplier(rtl)
       generic map (
@@ -55,7 +55,7 @@ begin
       )
       port map (
         mul_a   => syndromes(i),
-        mul_b   => err_locator(i),
+        mul_b   => error_locator(i),
         product => mul_outputs(i)
       );
   end generate multipliers;
@@ -64,18 +64,18 @@ begin
   -- Processes --
   ---------------
 
-  clk_proc : process(clk, rst)
+  clock_process : process(clock, reset)
   begin
-    if rst = '1' then
+    if reset = '1' then
       n                 <= 1;
       syndromes         <= (OTHERS => GF_ZERO);
-      err_locator       <= (OTHERS => GF_ZERO);
-      err_eval          <= (OTHERS => GF_ZERO);
+      error_locator       <= (OTHERS => GF_ZERO);
+      error_eval          <= (OTHERS => GF_ZERO);
       calculator_state  <= IDLE;
       ready             <= '0';
-      err_eval_out      <= (OTHERS => '0');
+      error_eval_out      <= (OTHERS => '0');
 
-    elsif rising_edge(clk) then
+    elsif rising_edge(clock) then
 
       ready <= '0'; -- preassignment
 
@@ -84,7 +84,7 @@ begin
         syndromes(syndromes'high(1)-1 downto 0) <= syndromes(syndromes'high(1) downto 1);
 
         -- store newly calculated coefficient of error-value evaluator
-        err_eval(NO_OF_SYNDROMES-n) <= err_eval_coef;
+        error_eval(NO_OF_SYNDROMES-n) <= error_eval_coef;
 
         -- check whether iteration should continue
         if n = NO_OF_SYNDROMES then
@@ -95,15 +95,15 @@ begin
       end if;
 
       -- if new input is given then reset calculation
-      if new_calc = '1' then
+      if new_calculation = '1' then
         -- read in syndromes
         for i in syndromes'high(1) downto 0 loop
           syndromes(i) <= syndromes_in((i+1)*M-1 downto i*M);
         end loop;
 
         -- read in error locator
-        for i in err_locator'high(1) downto 0 loop
-          err_locator(i) <= err_locator_in((i+1)*M-1 downto i*M);
+        for i in error_locator'high(1) downto 0 loop
+          error_locator(i) <= error_locator_in((i+1)*M-1 downto i*M);
         end loop;
 
         n                 <= 1;
@@ -114,23 +114,23 @@ begin
       if calculator_state = IDLE then
         ready   <= '1';
 
-        for i in err_eval'range(1) loop
-          err_eval_out((i+1)*M-1 downto i*M)  <= err_eval(i);
+        for i in error_eval'range(1) loop
+          error_eval_out((i+1)*M-1 downto i*M)  <= error_eval(i);
         end loop;
       end if;
     end if;
-  end process clk_proc;
+  end process clock_process;
 
-  comb_proc : process( mul_outputs )
-    variable var_err_eval_coef  : gf_elem;
+  combinatorial_process : process( mul_outputs )
+    variable var_error_eval_coef  : gf_elem;
   begin
     -- add multiplication products together
-    var_err_eval_coef   := GF_ZERO;
+    var_error_eval_coef   := GF_ZERO;
     for i in mul_outputs'range(1) loop
-      var_err_eval_coef := mul_outputs(i) XOR var_err_eval_coef;
+      var_error_eval_coef := mul_outputs(i) XOR var_error_eval_coef;
     end loop;
-    err_eval_coef <= var_err_eval_coef;
+    error_eval_coef <= var_error_eval_coef;
 
-  end process comb_proc;
+  end process combinatorial_process;
 
 end rtl;

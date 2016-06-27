@@ -78,10 +78,7 @@ begin
 
   -- generate two multipliers per error_location
   gen_denominator_multipliers : for i in 1 to NO_OF_CORR_ERRS generate
-    variable k  : natural;
   begin
---     k :=  (i+1) mod NO_OF_CORR_ERRS;
-
     feedback_multiplier : entity work.gf_multiplier(rtl)
       generic map (
         GF_POLYNOMIAL => GF_POLYNOMIAL

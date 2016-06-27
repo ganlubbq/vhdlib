@@ -11,16 +11,16 @@ entity gf_horner_evaluator is
   generic (
     GF_POLYNOMIAL   : std_logic_vector  := G709_GF_POLY;  -- irreducible, binary polynomial.
     NO_OF_PAR_EVALS : natural           := 3;             -- number of polynomial evaluations done in parallel.
-                                                          -- if syndromes are to be calcuted the eval_values signal should contain
+                                                          -- if syndromes are to be calculated the eval_values signal should contain
                                                           -- the values alpha^1 through alpha^NO_OF_PAR_EVALS are used for evaluation.
     NO_OF_COEFS     : natural           := 3;             -- number of coefficient symbols to process at a time; must divide polynomial (i.e. 0 remainder).
     SYMBOL_WIDTH    : natural           := 8              -- size of polynomial coefficient symbols.
   );
   port (
-    clk           : in  std_logic;
-    rst           : in  std_logic;
-    clk_enable    : in  std_logic;
-    new_calc      : in  std_logic;
+    clock           : in  std_logic;
+    reset           : in  std_logic;
+    clock_enable    : in  std_logic;
+    new_calculation      : in  std_logic;
     coefficients  : in  std_logic_vector(NO_OF_COEFS*SYMBOL_WIDTH-1 downto 0);                  -- polynomial coefficients; highest order symbol on MSBs, descending
     eval_values   : in  std_logic_vector(NO_OF_PAR_EVALS*(GF_POLYNOMIAL'length-1)-1 downto 0);
     start_values  : in  std_logic_vector(NO_OF_PAR_EVALS*(GF_POLYNOMIAL'length-1)-1 downto 0);
@@ -80,23 +80,23 @@ begin
     end generate gen_horner_multipliers;
   end generate gen_parallel_evaluations;
 
-  clk_proc : process (clk, rst)
+  clock_proc : process (clock, reset)
   begin
-    if rst = '1' then
+    if reset = '1' then
       result_value_regs <= (OTHERS => GF_ZERO);
-    elsif rising_edge(clk) then
-      if clk_enable = '1' then
+    elsif rising_edge(clock) then
+      if clock_enable = '1' then
         for i in 1 to NO_OF_PAR_EVALS loop
           result_value_regs(i)  <= connections(i,NO_OF_COEFS);
         end loop;
       end if;
     end if;
-  end process clk_proc;
+  end process clock_proc;
 
-  comb_proc : process(result_value_regs, new_calc, start_values)
+  comb_proc : process(result_value_regs, new_calculation, start_values)
   begin
     for i in 1 to NO_OF_PAR_EVALS loop
-      if new_calc = '1' then
+      if new_calculation = '1' then
         eval_value_wires(i) <= start_values(start_values'high-(i-1)*M downto start_values'length-i*M);
       else
         eval_value_wires(i) <= result_value_regs(i);

@@ -1,6 +1,6 @@
 clear;
 clc;
-file = fopen('../t_prbs_gen_par.txt','w');
+file = fopen('../t_prbs_generator_parallel.txt','w');
 
 poly = [1 0 0 1 0 1];
 m = length(poly)-1;
@@ -30,9 +30,9 @@ end
 fclose(file);
 
 %write do file
-file = fopen('../t_prbs_gen_par.do','w');
-fprintf(file,'vsim vhdlib_tb(prbs_gen_par_tb)\n');
+file = fopen('../t_prbs_generator_parallel.do','w');
+fprintf(file,'vsim vhdlib_tb(prbs_generator_parallel_tb)\n');
 fprintf(file,'log -r /*\n');
-fprintf(file,'do t_prbs_gen_par_wave.do\n');
+fprintf(file,'do t_prbs_generator_parallel_wave.do\n');
 fprintf(file,'run %i ns\n',iterations*10+10);
 fclose(file);

@@ -13,12 +13,12 @@ entity berlekamp_massey_calculator is
     NO_OF_SYNDROMES : natural           := 6
   );
   port (
-    clk             : in  std_logic;
-    rst             : in  std_logic;
-    new_calc        : in  std_logic;                                                                -- when '1' a new calculation is started with the given syndromes
+    clock             : in  std_logic;
+    reset             : in  std_logic;
+    new_calculation        : in  std_logic;                                                                -- when '1' a new calculation is started with the given syndromes
     syndromes_in    : in  std_logic_vector(NO_OF_SYNDROMES*(GF_POLYNOMIAL'length-1)-1 downto 0);  -- lowest order syndrome at MSBs, ascending
     ready           : out std_logic;                                                                -- when '1' the calculated error locator is ready
-    err_locator_out : out std_logic_vector(NO_OF_SYNDROMES*(GF_POLYNOMIAL'length-1)-1 downto 0)   -- highest order coefficient at MSBs, descending
+    error_locator_out : out std_logic_vector(NO_OF_SYNDROMES*(GF_POLYNOMIAL'length-1)-1 downto 0)   -- highest order coefficient at MSBs, descending
   );
 end entity;
 
@@ -101,9 +101,9 @@ begin
       TABLE_TYPE    => INV_TABLE_TYPE
     )
     port map (
-      clk       => clk,
-      elem_in   => d_prev,
-      elem_out  => d_prev_inv
+      clock       => clock,
+      element_in   => d_prev,
+      element_out  => d_prev_inv
     );
 
   inverse_d_table : entity work.gf_lookup_table(rtl)
@@ -112,18 +112,18 @@ begin
       TABLE_TYPE    => INV_TABLE_TYPE
     )
     port map (
-      clk       => clk,
-      elem_in   => d,
-      elem_out  => d_inv
+      clock       => clock,
+      element_in   => d,
+      element_out  => d_inv
     );
 
   ---------------
   -- Processes --
   ---------------
 
-  clk_proc : process(clk, rst)
+  clock_proc : process(clock, reset)
   begin
-    if rst = '1' then
+    if reset = '1' then
       use_d_prev_inv    <= '0';
       L                 <= 0;
       n                 <= 0;
@@ -135,8 +135,8 @@ begin
 
       calculator_state  <= IDLE;
       ready             <= '0';
-      err_locator_out   <= (OTHERS => '0');
-    elsif rising_edge(clk) then
+      error_locator_out   <= (OTHERS => '0');
+    elsif rising_edge(clock) then
 
       -- preassignments
       ready           <= '0';
@@ -170,7 +170,7 @@ begin
       end if;
 
       -- if new input is given then reset algorithm
-      if new_calc = '1' then
+      if new_calculation = '1' then
         L       <= 0;
         n       <= 0;
         k       <= 1;
@@ -191,13 +191,13 @@ begin
       if calculator_state = IDLE then
         ready           <= '1';
         for i in cx'range(1) loop
-          err_locator_out((i+1)*M-1 downto i*M)  <= cx(i);
+          error_locator_out((i+1)*M-1 downto i*M)  <= cx(i);
         end loop;
       else
-        err_locator_out <= (OTHERS => '0');
+        error_locator_out <= (OTHERS => '0');
       end if;
     end if;
-  end process clk_proc;
+  end process clock_proc;
 
   comb_proc : process(  d_mul_a_inputs,
                         d_mul_b_inputs,

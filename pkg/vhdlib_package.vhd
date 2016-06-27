@@ -9,7 +9,7 @@ package vhdlib_package is
 
   -- Type for GF(2^M) polynomials as natural integer arrays
   type gf2m_poly_t is array(natural range <>) of natural;
-  type bin_matrix_t is array(natural range <>, natural range <>) of std_logic;
+  type binary_matrix_t is array(natural range <>, natural range <>) of std_logic;
 
   ---------------
   -- CONSTANTS --
@@ -36,34 +36,34 @@ package vhdlib_package is
   ---------------------------
 
   -- XOR reduction of bit vector
-  pure function xor_reduce  (slv : std_logic_vector)
+  pure function xor_reduce  (vector_to_reduce : std_logic_vector)
     return std_logic;
 
   -- return remainder of binary polynomial division
-  pure function bin_poly_div (dividend  : std_logic_vector;
+  pure function binary_polynomial_division (dividend  : std_logic_vector;
                               divisor   : std_logic_vector)
     return std_logic_vector;
 
   -- binary polynomial division of monomial polynomial
-  pure function single_bit_poly_div ( div_len  : natural;
+  pure function single_bit_polynomial_division ( dividend_length  : natural;
                                       divisor  : std_logic_vector)
     return std_logic_vector;
 
   -- exponentiation of primitive GF(2^M) element
-  pure function prim_elem_exp (n        : natural;
-                               gf_poly  : std_logic_vector)
+  pure function primitive_element_exponentiation (n        : natural;
+                               gf_polynomial  : std_logic_vector)
     return std_logic_vector;
 
   -- multiplication of binary matrix
-  pure function bin_mat_multiply  (bin_mat_a  : bin_matrix_t;
-                                   bin_mat_b  : bin_matrix_t)
-    return bin_matrix_t;
+  pure function binary_matrix_multiply  (binary_matrix_a  : binary_matrix_t;
+                                   binary_matrix_b  : binary_matrix_t)
+    return binary_matrix_t;
 
   -- exponentiation of binary matrix
   -- TODO: not in use currently; remove?
-  pure function bin_mat_exp (n        : natural;
-                             bin_mat  : bin_matrix_t)
-    return bin_matrix_t;
+  pure function binary_matrix_exponentiation (n        : natural;
+                             binary_matrix  : binary_matrix_t)
+    return binary_matrix_t;
 
 end package vhdlib_package;
 
@@ -80,24 +80,24 @@ package body vhdlib_package is
   --                Becomes superfluous in VHDL-2008.
   --
   -- Input        :
-  --  slv         : Vector to be reduced.
+  --  vector_to_reduce         : Vector to be reduced.
   --
   -- Output       : Reduction of vector as single logic value.
   --
-  pure function xor_reduce(slv : std_logic_vector)
+  pure function xor_reduce(vector_to_reduce : std_logic_vector)
     return std_logic is
 
     variable r : std_logic;
   begin
     r := '0';
-    for i in slv'range loop
-      r := slv(i) XOR r;
+    for i in vector_to_reduce'range loop
+      r := vector_to_reduce(i) XOR r;
     end loop;
     return r;
   end;
 
   --
-  -- Function     : bin_poly_div
+  -- Function     : binary_polynomial_division
   --
   -- Description  : Binary polynomial division.
   --
@@ -107,7 +107,7 @@ package body vhdlib_package is
   --
   -- Output       : Remainder polynomial from division.
   --
-  pure function bin_poly_div (dividend  : std_logic_vector;
+  pure function binary_polynomial_division (dividend  : std_logic_vector;
                               divisor   : std_logic_vector)
     return std_logic_vector is
 
@@ -132,116 +132,116 @@ package body vhdlib_package is
     end if;
 
     return ret;
-  end function bin_poly_div;
+  end function binary_polynomial_division;
 
 
   --
-  -- Function     : single_bit_poly_div
+  -- Function     : single_bit_polynomial_division
   --
   -- Description  : Binary polynomial division of dividend
   --                with only one non-zero term.
   --
   -- Input        :
-  --  div_len     : Degree of dividend plus 1.
+  --  dividend_length     : Degree of dividend plus 1.
   --  divisor     : Divisor used for dividing the dividend.
   --
   -- Output       : Remainder polynomial from division.
   --
-  pure function single_bit_poly_div ( div_len  : natural;
+  pure function single_bit_polynomial_division ( dividend_length  : natural;
                                       divisor  : std_logic_vector)
     return std_logic_vector is
 
-    variable v : std_logic_vector(div_len-1 downto 0);
+    variable v : std_logic_vector(dividend_length-1 downto 0);
   begin
     v         := (OTHERS => '0');
     v(v'high) := '1';
 
-    return bin_poly_div(v, divisor);
-  end function single_bit_poly_div;
+    return binary_polynomial_division(v, divisor);
+  end function single_bit_polynomial_division;
 
   --
-  -- Function     : prim_elem_exp
+  -- Function     : primitive_element_exponentiation
   --
   -- Description  : Calculates the nth power of a primitive
   --                element from GF(2^M).
   --
   -- Input        :
   --  n           : The power of the primitive element.
-  --  gf_poly     : Irreducible polynomial used to construct GF(2^M).
+  --  gf_polynomial     : Irreducible polynomial used to construct GF(2^M).
   --
   -- Output       : An element from GF(2^M) that is the nth power of
   --                the primitive element.
   --
-  pure function prim_elem_exp (n        : natural;
-                               gf_poly  : std_logic_vector)
+  pure function primitive_element_exponentiation (n        : natural;
+                               gf_polynomial  : std_logic_vector)
     return std_logic_vector is
   begin
-    return single_bit_poly_div(n+1, gf_poly);
-  end function prim_elem_exp;
+    return single_bit_polynomial_division(n+1, gf_polynomial);
+  end function primitive_element_exponentiation;
 
   --
-  -- Function     : bin_mat_multiply
+  -- Function     : binary_matrix_multiply
   --
   -- Description  : Multiplies two binary matrices.
   --
   -- Input        :
-  --  bin_mat_a   : A binary matrix.
-  --  bin_mat_b   : A binary matrix.
+  --  binary_matrix_a   : A binary matrix.
+  --  binary_matrix_b   : A binary matrix.
   --
   -- Output       : A binary matrix of size equal to first dimension of
-  --                bin_mat_a and second dimension of bin_mat_b.
+  --                binary_matrix_a and second dimension of binary_matrix_b.
   --
-  pure function bin_mat_multiply  (bin_mat_a  : bin_matrix_t;
-                                   bin_mat_b  : bin_matrix_t)
-    return bin_matrix_t is
-    variable ret_mat  : bin_matrix_t(bin_mat_a'range(1), bin_mat_b'range(2));
+  pure function binary_matrix_multiply  (binary_matrix_a  : binary_matrix_t;
+                                   binary_matrix_b  : binary_matrix_t)
+    return binary_matrix_t is
+    variable return_matrix  : binary_matrix_t(binary_matrix_a'range(1), binary_matrix_b'range(2));
   begin
-    -- number of columns in bin_mat_a must equal number of rows in bin_mat_b
-    assert bin_mat_a'length(2) = bin_mat_b'length(1)
+    -- number of columns in binary_matrix_a must equal number of rows in binary_matrix_b
+    assert binary_matrix_a'length(2) = binary_matrix_b'length(1)
       report "Dimensions of matrices to multiply do not match!"
       severity failure;
 
-    ret_mat := (OTHERS => (OTHERS => '0'));
+    return_matrix := (OTHERS => (OTHERS => '0'));
 
-    -- k iterates over rows of bin_mat_a
-    for k in bin_mat_a'range(1) loop
-      -- i iterates over columns of bin_mat_a
-      for i in bin_mat_a'range(2) loop
-        -- j iterates over columns of bin_mat_b
-        for j in bin_mat_b'range(2) loop
-          ret_mat(k,i)  := ret_mat(k,i) XOR (bin_mat_a(k,j) AND bin_mat_b(j,i));
+    -- k iterates over rows of binary_matrix_a
+    for k in binary_matrix_a'range(1) loop
+      -- i iterates over columns of binary_matrix_a
+      for i in binary_matrix_a'range(2) loop
+        -- j iterates over columns of binary_matrix_b
+        for j in binary_matrix_b'range(2) loop
+          return_matrix(k,i)  := return_matrix(k,i) XOR (binary_matrix_a(k,j) AND binary_matrix_b(j,i));
         end loop;
       end loop;
     end loop;
 
-    return ret_mat;
-  end function bin_mat_multiply;
+    return return_matrix;
+  end function binary_matrix_multiply;
 
   --
-  -- Function     : bin_mat_exp
+  -- Function     : binary_matrix_exponentiation
   --
   -- Description  : Calculates the nth power of a quadratic,
   --                binary matrix.
   --
   -- Input        :
   --  n           : The power of the exponentiation.
-  --  bin_mat     : The quadratic, binary matrix.
+  --  binary_matrix     : The quadratic, binary matrix.
   --
-  -- Output       : A binary matrix of size equal to bin_mat.
+  -- Output       : A binary matrix of size equal to binary_matrix.
   --
-  pure function bin_mat_exp (n        : natural;
-                             bin_mat  : bin_matrix_t)
-    return bin_matrix_t is
-    variable ret_mat  : bin_matrix_t(bin_mat'range, bin_mat'range);
+  pure function binary_matrix_exponentiation (n        : natural;
+                             binary_matrix  : binary_matrix_t)
+    return binary_matrix_t is
+    variable return_matrix  : binary_matrix_t(binary_matrix'range, binary_matrix'range);
   begin
-    ret_mat := bin_mat;
+    return_matrix := binary_matrix;
 
     -- if n < 2 just return input matrix
     for e in 2 to n loop
-      ret_mat := bin_mat_multiply(ret_mat, bin_mat);
+      return_matrix := binary_matrix_multiply(return_matrix, binary_matrix);
     end loop;
 
-    return ret_mat;
-  end function bin_mat_exp;
+    return return_matrix;
+  end function binary_matrix_exponentiation;
 
 end package body vhdlib_package;

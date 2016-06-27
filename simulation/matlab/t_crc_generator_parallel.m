@@ -1,5 +1,5 @@
 clc;
-file = fopen('../t_crc_gen_par.txt','w');
+file = fopen('../t_crc_generator_parallel.txt','w');
 
 %CRC32 polynomial
 gpoly = gf([1 0 0 0 0 0 1 0 0 1 1 0 0 0 0 0 1 0 0 0 1 1 1 0 1 1 0 1 1 0 1 1 1],1);
@@ -21,9 +21,9 @@ end
 fclose(file);
 
 %write do file
-file = fopen('../t_crc_gen_par.do','w');
-fprintf(file,'vsim vhdlib_tb(crc_gen_par_tb)\n');
+file = fopen('../t_crc_generator_parallel.do','w');
+fprintf(file,'vsim vhdlib_tb(crc_generator_parallel_tb)\n');
 fprintf(file,'log -r /*\n');
-fprintf(file,'do t_crc_gen_par_wave.do\n');
+fprintf(file,'do t_crc_generator_parallel_wave.do\n');
 fprintf(file,'run %i ns\n',length(da)/dw*10+10);
 fclose(file);
