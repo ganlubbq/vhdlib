@@ -23,10 +23,12 @@ package vhdlib_package is
   constant BINARY_POLYNOMIAL_G975_I10_GF  : std_logic_vector  := "10000001001";
 
   -- look-up table types
-  constant INV_TABLE_TYPE       : string  := "INVERSE";
-  constant LOG_TABLE_TYPE       : string  := "LOGARITHM";
-  constant EXP_TABLE_TYPE       : string  := "EXPONENT";
-  constant ZECH_LOG_TABLE_TYPE  : string  := "ZECH_LOGARITHM";
+  type gf_table_type is (
+    gf_table_type_inverse,
+    gf_table_type_logarithm,     
+    gf_table_type_exponent,     
+    gf_table_type_zech_logarithm
+  );
 
   -- G709 RS(255,239) generator polynomial
   constant GF2M_POLYNOMIAL_G709_GENERATOR : gf2m_poly_t := (1, 59, 13, 104, 189, 68, 209, 30, 8, 163, 65, 41, 229, 98, 50, 36, 59);

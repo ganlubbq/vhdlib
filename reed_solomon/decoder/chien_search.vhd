@@ -73,7 +73,7 @@ begin
   lookup_table : entity work.gf_lookup_table_dp(rtl)
     generic map (
       GF_POLYNOMIAL   => GF_POLYNOMIAL,
-      TABLE_TYPE      => EXP_TABLE_TYPE
+      TABLE_TYPE      => gf_table_type_exponent
     )
     port map (
       clock             => clock,

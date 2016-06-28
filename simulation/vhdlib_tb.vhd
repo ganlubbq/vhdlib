@@ -319,7 +319,7 @@ architecture gf_lookup_table_tb of vhdlib_tb is
 
   constant GF_POLYNOMIAL : std_logic_vector := BINARY_POLYNOMIAL_DECIMAL_19;
   constant M             : integer          := GF_POLYNOMIAL'length-1;
-  constant TABLE_TYPE    : string           := ZECH_LOG_TABLE_TYPE;
+  constant TABLE_TYPE    : gf_table_type    := gf_table_type_zech_logarithm;
 
   signal clock        : std_logic;
   signal element_in    : std_logic_vector(M-1 downto 0);

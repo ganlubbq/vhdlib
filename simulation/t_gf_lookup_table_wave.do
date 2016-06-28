@@ -1,9 +1,9 @@
 onerror {resume}
 
 quietly WaveActivateNextPane {} 0
-add wave -noupdate /vhdlib_tb/dut/clk
-add wave -noupdate -radix unsigned /vhdlib_tb/dut/elem_in
-add wave -noupdate -radix unsigned /vhdlib_tb/dut/elem_out
+add wave -noupdate /vhdlib_tb/dut/clock
+add wave -noupdate -radix unsigned /vhdlib_tb/dut/element_in
+add wave -noupdate -radix unsigned /vhdlib_tb/dut/element_out
 
 TreeUpdate [SetDefaultTree]
 

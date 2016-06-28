@@ -98,7 +98,7 @@ begin
   inverse_d_prev_table : entity work.gf_lookup_table(rtl)
     generic map (
       GF_POLYNOMIAL => GF_POLYNOMIAL,
-      TABLE_TYPE    => INV_TABLE_TYPE
+      TABLE_TYPE    => gf_table_type_inverse
     )
     port map (
       clock       => clock,
@@ -109,7 +109,7 @@ begin
   inverse_d_table : entity work.gf_lookup_table(rtl)
     generic map (
       GF_POLYNOMIAL => GF_POLYNOMIAL,
-      TABLE_TYPE    => INV_TABLE_TYPE
+      TABLE_TYPE    => gf_table_type_inverse
     )
     port map (
       clock       => clock,
