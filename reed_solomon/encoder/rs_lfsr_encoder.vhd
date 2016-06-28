@@ -11,8 +11,8 @@ use work.vhdlib_package.all;
 
 entity rs_lfsr_encoder is
   generic (
-    GEN_POLYNOMIAL  : gf2m_poly_t       := G709_GEN_POLY;         -- a generator polynomial given as an array of integers
-    GF_POLYNOMIAL   : std_logic_vector  := G709_GF_POLY           -- irreducible, binary polynomial
+    GEN_POLYNOMIAL  : gf2m_poly_t       := GF2M_POLYNOMIAL_G709_GENERATOR;  -- a generator polynomial given as an array of integers
+    GF_POLYNOMIAL   : std_logic_vector  := BINARY_POLYNOMIAL_G709_GF        -- irreducible, binary polynomial
   );
   port (
     clock : in  std_logic;                                          -- clock

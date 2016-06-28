@@ -10,7 +10,7 @@ use work.vhdlib_package.all;
 
 entity crc_generator_parallel is
   generic (
-    POLYNOMIAL : std_logic_vector := CRC32_POLY; -- binary CRC polynomial
+    POLYNOMIAL : std_logic_vector := BINARY_POLYNOMIAL_CRC32; -- binary CRC polynomial
     DATA_WIDTH : natural          := 8
   );
   port (

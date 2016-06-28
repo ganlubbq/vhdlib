@@ -10,19 +10,19 @@ use work.vhdlib_package.all;
 
 entity chien_search is
   generic (
-    GF_POLYNOMIAL   : std_logic_vector  := G709_GF_POLY; -- irreducible, binary polynomial
+    GF_POLYNOMIAL   : std_logic_vector  := BINARY_POLYNOMIAL_G709_GF; -- irreducible, binary polynomial
     NO_OF_CORR_ERRS : natural           := 3;
     NO_OF_SYNDROMES : natural           := 6
   );
   port (
     clock               : in  std_logic;
     reset               : in  std_logic;
-    new_calculation          : in  std_logic;
+    new_calculation     : in  std_logic;
     error_locator_in    : in  std_logic_vector(NO_OF_SYNDROMES*(GF_POLYNOMIAL'length-1)-1 downto 0);  -- highest order coefficient at MSBs, descending
-    ready             : out std_logic;                                                              -- when '1' the module is ready for new input and any possible output from the previous calculation can be read
+    ready               : out std_logic;                                                              -- when '1' the module is ready for new input and any possible output from the previous calculation can be read
     error_roots_out     : out std_logic_vector(NO_OF_CORR_ERRS*(GF_POLYNOMIAL'length-1)-1 downto 0);
     error_locations_out : out std_logic_vector(NO_OF_CORR_ERRS*(GF_POLYNOMIAL'length-1)-1 downto 0);
-    sym_locations_out : out std_logic_vector(NO_OF_CORR_ERRS*(GF_POLYNOMIAL'length-1)-1 downto 0)   -- locations of erroneous symbols in codeword
+    sym_locations_out   : out std_logic_vector(NO_OF_CORR_ERRS*(GF_POLYNOMIAL'length-1)-1 downto 0)   -- locations of erroneous symbols in codeword
   );
 end entity;
 

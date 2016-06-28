@@ -11,7 +11,7 @@ use work.vhdlib_package.all;
 
 entity gf_lookup_table_dp is
   generic (
-    GF_POLYNOMIAL   : std_logic_vector := G709_GF_POLY; -- irreducible, binary polynomial
+    GF_POLYNOMIAL   : std_logic_vector := BINARY_POLYNOMIAL_G709_GF; -- irreducible, binary polynomial
     TABLE_TYPE      : string           := INV_TABLE_TYPE
   );
   port (

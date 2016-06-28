@@ -3,19 +3,19 @@ onerror {resume}
 add log -r sim:/vhdlib_tb/dut/*
 
 quietly WaveActivateNextPane {} 0
-add wave -noupdate /vhdlib_tb/dut/clk
-add wave -noupdate /vhdlib_tb/dut/clk_enable
-add wave -noupdate /vhdlib_tb/dut/rst
-add wave -noupdate /vhdlib_tb/dut/new_calc
+add wave -noupdate /vhdlib_tb/dut/clock
+add wave -noupdate /vhdlib_tb/dut/clock_enable
+add wave -noupdate /vhdlib_tb/dut/reset
+add wave -noupdate /vhdlib_tb/dut/new_calculation
 add wave -noupdate /vhdlib_tb/dut/ready
-add wave -noupdate /vhdlib_tb/dut/new_numerator_calc
-add wave -noupdate /vhdlib_tb/dut/err_eval_shift_cnt
-add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/err_roots_in
-add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/err_eval_in
-add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/err_values_out
-add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/err_roots  
-add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/err_eval
-add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/err_eval_coefs
+add wave -noupdate /vhdlib_tb/dut/new_numerator_calculation
+add wave -noupdate /vhdlib_tb/dut/error_eval_shift_count
+add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/error_roots_in
+add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/error_eval_in
+add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/error_values_out
+add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/error_roots  
+add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/error_eval
+add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/error_eval_coefs
 add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/numerator_values
 add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/numerator_values_latch
 add wave -noupdate /vhdlib_tb/dut/calculator_state

@@ -10,8 +10,8 @@ use work.vhdlib_package.all;
 
 entity gf_horner_multiplier is
   generic (
-    GF_POLYNOMIAL : std_logic_vector  := G709_GF_POLY;  -- irreducible, binary polynomial
-    SYMBOL_WIDTH  : natural           := 8              -- size of polynomial coefficients
+    GF_POLYNOMIAL : std_logic_vector  := BINARY_POLYNOMIAL_G709_GF; -- irreducible, binary polynomial
+    SYMBOL_WIDTH  : natural           := 8                          -- size of polynomial coefficients
   );
   port (
     coefficient : in  std_logic_vector(SYMBOL_WIDTH-1 downto 0);          -- coefficient of polynomial being evaluated

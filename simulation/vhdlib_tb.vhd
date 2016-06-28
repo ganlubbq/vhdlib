@@ -8,6 +8,8 @@ library work;
 use work.vhdlib_package.all;
 
 entity vhdlib_tb is
+  
+  constant BINARY_POLYNOMIAL_DECIMAL_19 : std_logic_vector  := "10011";
 
 end vhdlib_tb;
 
@@ -15,8 +17,8 @@ end vhdlib_tb;
 -- rs_lfsr_encoder --
 ---------------------
 architecture rs_lfsr_encoder_tb of vhdlib_tb is
-  constant GEN_POLYNOMIAL   : gf2m_poly_t       := G709_GEN_POLY;
-  constant GF_POLYNOMIAL    : std_logic_vector  := G709_GF_POLY;
+  constant GEN_POLYNOMIAL   : gf2m_poly_t       := GF2M_POLYNOMIAL_G709_GENERATOR;
+  constant GF_POLYNOMIAL    : std_logic_vector  := BINARY_POLYNOMIAL_G709_GF;
 
   signal clock, reset, start_of_message, start_of_codeword, end_of_codeword : std_logic := '0';
   signal message, codeword : std_logic_vector(7 downto 0);
@@ -118,7 +120,7 @@ end rs_lfsr_encoder_tb;
 -------------------------
 
 architecture gf_horner_evaluator_tb of vhdlib_tb is
-  constant GF_POLYNOMIAL    : std_logic_vector := "10011"; -- irreducible, binary polynomial
+  constant GF_POLYNOMIAL    : std_logic_vector := BINARY_POLYNOMIAL_DECIMAL_19; -- irreducible, binary polynomial
   constant NO_OF_PAR_EVALS  : natural := 6;
   constant NO_OF_COEFS      : natural := 3;
   constant SYMBOL_WIDTH     : natural := 4;
@@ -226,7 +228,7 @@ end gf_horner_evaluator_tb;
 -------------------------
 
 architecture syndrome_calculator_tb of vhdlib_tb is
-  constant GF_POLYNOMIAL    : std_logic_vector := "10011"; -- irreducible, binary polynomial
+  constant GF_POLYNOMIAL    : std_logic_vector := BINARY_POLYNOMIAL_DECIMAL_19; -- irreducible, binary polynomial
   constant NO_OF_COEFS      : natural := 3;
   constant NO_OF_SYNDROMES  : natural := 6;
   constant M                : natural := GF_POLYNOMIAL'length-1;
@@ -315,7 +317,7 @@ end syndrome_calculator_tb;
 
 architecture gf_lookup_table_tb of vhdlib_tb is
 
-  constant GF_POLYNOMIAL : std_logic_vector := "10011";
+  constant GF_POLYNOMIAL : std_logic_vector := BINARY_POLYNOMIAL_DECIMAL_19;
   constant M             : integer          := GF_POLYNOMIAL'length-1;
   constant TABLE_TYPE    : string           := ZECH_LOG_TABLE_TYPE;
 
@@ -375,7 +377,7 @@ end gf_lookup_table_tb;
 
 architecture gf_horner_multiplier_tb of vhdlib_tb is
 
-  constant GF_POLYNOMIAL : std_logic_vector := "10011";
+  constant GF_POLYNOMIAL : std_logic_vector := BINARY_POLYNOMIAL_DECIMAL_19;
   constant SYMBOL_WIDTH  : integer          := 4;
   constant M             : integer          := GF_POLYNOMIAL'length-1;
 
@@ -429,7 +431,7 @@ end gf_horner_multiplier_tb;
 -- crc_generator_parallel --
 ----------------------------
 architecture crc_generator_parallel_tb of vhdlib_tb is
-  constant POLYNOMIAL  : std_logic_vector := CRC32_POLY;
+  constant POLYNOMIAL  : std_logic_vector := BINARY_POLYNOMIAL_CRC32;
   constant DATA_WIDTH  : integer := 8;
 
   signal crc_in, crc_out : std_logic_vector(POLYNOMIAL'length-2 downto 0);
@@ -541,7 +543,7 @@ end prbs_generator_parallel_tb;
 ---------------------------------
 
 architecture berlekamp_massey_calculator_tb of vhdlib_tb is
-  constant GF_POLYNOMIAL    : std_logic_vector := "10011"; -- irreducible, binary polynomial
+  constant GF_POLYNOMIAL    : std_logic_vector := BINARY_POLYNOMIAL_DECIMAL_19; -- irreducible, binary polynomial
   constant SYMBOL_WIDTH     : integer := 4;
   constant NO_OF_CORR_ERRS  : integer := 3;
   constant NO_OF_SYNDROMES  : integer := 2*NO_OF_CORR_ERRS;
@@ -628,7 +630,7 @@ end berlekamp_massey_calculator_tb;
 ---------------------------
 
 architecture error_value_evaluator_tb of vhdlib_tb is
-  constant GF_POLYNOMIAL    : std_logic_vector := "10011"; -- irreducible, binary polynomial
+  constant GF_POLYNOMIAL    : std_logic_vector := BINARY_POLYNOMIAL_DECIMAL_19; -- irreducible, binary polynomial
   constant SYMBOL_WIDTH     : integer := 4;
   constant NO_OF_CORR_ERRS  : integer := 3;
   constant NO_OF_SYNDROMES  : integer := 2*NO_OF_CORR_ERRS;
@@ -724,7 +726,7 @@ end error_value_evaluator_tb;
 -----------------------
 
 -- architecture forney_calculator_tb of vhdlib_tb is
---   constant GF_POLYNOMIAL    : std_logic_vector := "10011"; -- irreducible, binary polynomial
+--   constant GF_POLYNOMIAL    : std_logic_vector := BINARY_POLYNOMIAL_DECIMAL_19; -- irreducible, binary polynomial
 --   constant NO_OF_CORR_ERRS  : integer := 3;
 --   constant NO_OF_SYNDROMES  : integer := 2*NO_OF_CORR_ERRS;
 --   constant M                : integer := GF_POLYNOMIAL'length-1;
@@ -819,7 +821,7 @@ end error_value_evaluator_tb;
 ------------------
 
 architecture chien_search_tb of vhdlib_tb is
-  constant GF_POLYNOMIAL    : std_logic_vector := "10011"; -- irreducible, binary polynomial
+  constant GF_POLYNOMIAL    : std_logic_vector := BINARY_POLYNOMIAL_DECIMAL_19; -- irreducible, binary polynomial
   constant SYMBOL_WIDTH     : integer := 4;
   constant NO_OF_CORR_ERRS  : integer := 3;
   constant NO_OF_SYNDROMES  : integer := 2*NO_OF_CORR_ERRS;

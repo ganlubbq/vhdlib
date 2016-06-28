@@ -10,7 +10,7 @@ use work.vhdlib_package.all;
 
 entity prbs_generator_parallel is
   generic (
-    POLYNOMIAL : std_logic_vector := PRBS_3_POLY; -- binary PRBS polynomial
+    POLYNOMIAL : std_logic_vector := BINARY_POLYNOMIAL_PRBS_3; -- binary PRBS polynomial
     DATA_WIDTH : natural          := 4
   );
   port (

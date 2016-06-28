@@ -16,11 +16,11 @@ package vhdlib_package is
   ---------------
 
   -- binary polynomials
-  constant CRC32_POLY         : std_logic_vector  := "100000100110000010001110110110111";
-  constant PRBS_32_POLY       : std_logic_vector  := "100000000010000000000000000000111";
-  constant PRBS_3_POLY        : std_logic_vector  := "1101";
-  constant G709_GF_POLY       : std_logic_vector  := "100011101";
-  constant G975_I10_GF_POLY   : std_logic_vector  := "10000001001";
+  constant BINARY_POLYNOMIAL_CRC32        : std_logic_vector  := "100000100110000010001110110110111";
+  constant BINARY_POLYNOMIAL_PRBS_32      : std_logic_vector  := "100000000010000000000000000000111";
+  constant BINARY_POLYNOMIAL_PRBS_3       : std_logic_vector  := "1101";
+  constant BINARY_POLYNOMIAL_G709_GF      : std_logic_vector  := "100011101";
+  constant BINARY_POLYNOMIAL_G975_I10_GF  : std_logic_vector  := "10000001001";
 
   -- look-up table types
   constant INV_TABLE_TYPE       : string  := "INVERSE";
@@ -29,7 +29,7 @@ package vhdlib_package is
   constant ZECH_LOG_TABLE_TYPE  : string  := "ZECH_LOGARITHM";
 
   -- G709 RS(255,239) generator polynomial
-  constant G709_GEN_POLY      : gf2m_poly_t       := (1, 59, 13, 104, 189, 68, 209, 30, 8, 163, 65, 41, 229, 98, 50, 36, 59);
+  constant GF2M_POLYNOMIAL_G709_GENERATOR : gf2m_poly_t := (1, 59, 13, 104, 189, 68, 209, 30, 8, 163, 65, 41, 229, 98, 50, 36, 59);
 
   ---------------------------
   -- FUNCTION DECLARATIONS --
@@ -41,7 +41,7 @@ package vhdlib_package is
 
   -- return remainder of binary polynomial division
   pure function binary_polynomial_division (dividend  : std_logic_vector;
-                              divisor   : std_logic_vector)
+                                            divisor   : std_logic_vector)
     return std_logic_vector;
 
   -- binary polynomial division of monomial polynomial

@@ -9,15 +9,15 @@ use work.vhdlib_package.all;
 
 entity syndrome_calculator is
   generic (
-    GF_POLYNOMIAL   : std_logic_vector  := G709_GF_POLY;  -- irreducible, binary polynomial
-    NO_OF_COEFS     : natural           := 3;             -- number of coefficient symbols to process at a time; must divide polynomial (i.e. 0 remainder).
-    NO_OF_SYNDROMES : natural           := 6              -- number of syndromes to calculate
+    GF_POLYNOMIAL   : std_logic_vector  := BINARY_POLYNOMIAL_G709_GF; -- irreducible, binary polynomial
+    NO_OF_COEFS     : natural           := 3;                         -- number of coefficient symbols to process at a time; must divide polynomial (i.e. 0 remainder).
+    NO_OF_SYNDROMES : natural           := 6                          -- number of syndromes to calculate
   );
   port (
-    clock             : in  std_logic;
-    reset             : in  std_logic;
-    clock_enable      : in  std_logic;
-    new_calculation        : in  std_logic;
+    clock           : in  std_logic;
+    reset           : in  std_logic;
+    clock_enable    : in  std_logic;
+    new_calculation : in  std_logic;
     coefficients    : in  std_logic_vector(NO_OF_COEFS*(GF_POLYNOMIAL'length-1)-1 downto 0);      -- polynomial coefficients; highest order symbol on MSBs, descending
     syndromes       : out std_logic_vector(NO_OF_SYNDROMES*(GF_POLYNOMIAL'length-1)-1 downto 0)
   );

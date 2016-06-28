@@ -9,12 +9,12 @@ use work.vhdlib_package.all;
 
 entity gf_horner_evaluator is
   generic (
-    GF_POLYNOMIAL   : std_logic_vector  := G709_GF_POLY;  -- irreducible, binary polynomial.
-    NO_OF_PAR_EVALS : natural           := 3;             -- number of polynomial evaluations done in parallel.
-                                                          -- if syndromes are to be calculated the eval_values signal should contain
-                                                          -- the values alpha^1 through alpha^NO_OF_PAR_EVALS are used for evaluation.
-    NO_OF_COEFS     : natural           := 3;             -- number of coefficient symbols to process at a time; must divide polynomial (i.e. 0 remainder).
-    SYMBOL_WIDTH    : natural           := 8              -- size of polynomial coefficient symbols.
+    GF_POLYNOMIAL   : std_logic_vector  := BINARY_POLYNOMIAL_G709_GF; -- irreducible, binary polynomial.
+    NO_OF_PAR_EVALS : natural           := 3;                         -- number of polynomial evaluations done in parallel.
+                                                                      -- if syndromes are to be calculated the eval_values signal should contain
+                                                                      -- the values alpha^1 through alpha^NO_OF_PAR_EVALS are used for evaluation.
+    NO_OF_COEFS     : natural           := 3;                         -- number of coefficient symbols to process at a time; must divide polynomial (i.e. 0 remainder).
+    SYMBOL_WIDTH    : natural           := 8                          -- size of polynomial coefficient symbols.
   );
   port (
     clock           : in  std_logic;
