@@ -84,9 +84,9 @@ begin
         GF_POLYNOMIAL => GF_POLYNOMIAL
       )
       port map (
-        mul_a   => denominator_values(denominator_values'high-(i-1)*M downto denominator_values'length-i*M),
-        mul_b   => term_product,
-        product => denominator_products(denominator_products'high-(i-1)*M downto denominator_products'length-i*M)
+        multiplicand_a  => denominator_values(denominator_values'high-(i-1)*M downto denominator_values'length-i*M),
+        multiplicand_b  => term_product,
+        product         => denominator_products(denominator_products'high-(i-1)*M downto denominator_products'length-i*M)
       );
 
     term_multiplier : entity work.gf_multiplier(rtl)
@@ -94,9 +94,9 @@ begin
         GF_POLYNOMIAL => GF_POLYNOMIAL
       )
       port map (
-        mul_a   => error_roots(error_roots'high-(i-1)*M downto error_roots'length-(i)*M),
-        mul_b   => error_locations(error_locations'high-(i-1)*M downto error_locations'length-i*M),
-        product => term_product
+        multiplicand_a  => error_roots(error_roots'high-(i-1)*M downto error_roots'length-(i)*M),
+        multiplicand_b  => error_locations(error_locations'high-(i-1)*M downto error_locations'length-i*M),
+        product         => term_product
       );
   end generate gen_denominator_multipliers;
 

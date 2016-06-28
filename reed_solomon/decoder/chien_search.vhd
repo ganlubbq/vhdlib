@@ -63,9 +63,9 @@ begin
         GF_POLYNOMIAL => GF_POLYNOMIAL
       )
       port map (
-        mul_a     => primitive_element_exponentiation(j,GF_POLYNOMIAL), -- primitive element to the jth power
-        mul_b     => gammas(j),                                         -- jth term of last polynomial evaluation
-        product   => gammas_new(j)                                      -- jth term of current polynomial evaluation
+        multiplicand_a  => primitive_element_exponentiation(j,GF_POLYNOMIAL), -- primitive element to the jth power
+        multiplicand_b  => gammas(j),                                         -- jth term of last polynomial evaluation
+        product         => gammas_new(j)                                      -- jth term of current polynomial evaluation
       );
   end generate gen_coef_multipliers;
 

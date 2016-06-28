@@ -23,10 +23,10 @@ end entity;
 
 architecture rtl of gf_horner_multiplier is
 
-  constant M          : natural                         := GF_POLYNOMIAL'length-1;
+  constant M                : natural := GF_POLYNOMIAL'length-1;
 
-  signal product          : std_logic_vector(M-1 downto 0);
-  signal coefficient_pad  : std_logic_vector(M-1 downto 0);
+  signal product            : std_logic_vector(M-1 downto 0);
+  signal padded_coefficient : std_logic_vector(M-1 downto 0);
 
 begin
 
@@ -36,17 +36,17 @@ begin
       GF_POLYNOMIAL => GF_POLYNOMIAL
     )
     port map (
-      mul_a   => eval_value,
-      mul_b   => product_in,
-      product => product
+      multiplicand_a  => eval_value,
+      multiplicand_b  => product_in,
+      product         => product
     );
 
-  pad_proc : process (coefficient)
+  padding_process : process (coefficient)
   begin
-    coefficient_pad                     <= (OTHERS => '0');
-    coefficient_pad(coefficient'range)  <= coefficient;
-  end process pad_proc;
+    padded_coefficient                     <= (OTHERS => '0');
+    padded_coefficient(coefficient'range)  <= coefficient;
+  end process padding_process;
 
-  product_out <= product XOR coefficient_pad;
+  product_out <= product XOR padded_coefficient;
 
 end rtl;

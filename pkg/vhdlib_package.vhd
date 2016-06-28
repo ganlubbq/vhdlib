@@ -8,7 +8,7 @@ package vhdlib_package is
   -----------
 
   -- Type for GF(2^M) polynomials as natural integer arrays
-  type gf2m_poly_t is array(natural range <>) of natural;
+  type gf2m_polynomial is array(natural range <>) of natural;
   type binary_matrix_t is array(natural range <>, natural range <>) of std_logic;
 
   -- look-up table type
@@ -31,7 +31,7 @@ package vhdlib_package is
   constant BINARY_POLYNOMIAL_G975_I10_GF  : std_logic_vector  := "10000001001";
 
   -- G709 RS(255,239) generator polynomial
-  constant GF2M_POLYNOMIAL_G709_GENERATOR : gf2m_poly_t := (1, 59, 13, 104, 189, 68, 209, 30, 8, 163, 65, 41, 229, 98, 50, 36, 59);
+  constant GF2M_POLYNOMIAL_G709_GENERATOR : gf2m_polynomial := (1, 59, 13, 104, 189, 68, 209, 30, 8, 163, 65, 41, 229, 98, 50, 36, 59);
 
   ---------------------------
   -- FUNCTION DECLARATIONS --

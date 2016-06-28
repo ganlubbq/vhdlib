@@ -20,35 +20,35 @@ entity gf_horner_evaluator is
     clock           : in  std_logic;
     reset           : in  std_logic;
     clock_enable    : in  std_logic;
-    new_calculation      : in  std_logic;
-    coefficients  : in  std_logic_vector(NO_OF_COEFS*SYMBOL_WIDTH-1 downto 0);                  -- polynomial coefficients; highest order symbol on MSBs, descending
-    eval_values   : in  std_logic_vector(NO_OF_PAR_EVALS*(GF_POLYNOMIAL'length-1)-1 downto 0);
-    start_values  : in  std_logic_vector(NO_OF_PAR_EVALS*(GF_POLYNOMIAL'length-1)-1 downto 0);
-    result_values : out std_logic_vector(NO_OF_PAR_EVALS*(GF_POLYNOMIAL'length-1)-1 downto 0)
+    new_calculation : in  std_logic;
+    coefficients    : in  std_logic_vector(NO_OF_COEFS*SYMBOL_WIDTH-1 downto 0);                  -- polynomial coefficients; highest order symbol on MSBs, descending
+    eval_values     : in  std_logic_vector(NO_OF_PAR_EVALS*(GF_POLYNOMIAL'length-1)-1 downto 0);
+    start_values    : in  std_logic_vector(NO_OF_PAR_EVALS*(GF_POLYNOMIAL'length-1)-1 downto 0);
+    result_values   : out std_logic_vector(NO_OF_PAR_EVALS*(GF_POLYNOMIAL'length-1)-1 downto 0)
   );
 end entity;
 
 architecture rtl of gf_horner_evaluator is
   constant M  : natural := GF_POLYNOMIAL'length-1;
 
-  subtype gf_elem       is std_logic_vector(M-1 downto 0);
-  type connections_t    is array(1 to NO_OF_PAR_EVALS, 1 to NO_OF_COEFS) of gf_elem;
-  type gf_elements_t    is array(1 to NO_OF_PAR_EVALS) of gf_elem;
+  subtype gf_element    is std_logic_vector(M-1 downto 0);
+  type connection_array is array(1 to NO_OF_PAR_EVALS, 1 to NO_OF_COEFS) of gf_element;
+  type gf_element_array is array(1 to NO_OF_PAR_EVALS) of gf_element;
 
-  constant GF_ZERO  : gf_elem := (OTHERS => '0');
+  constant GF_ZERO  : gf_element := (OTHERS => '0');
 
-  signal connections        : connections_t;
-  signal result_value_regs  : gf_elements_t;
-  signal eval_value_wires   : gf_elements_t;
+  signal connections        : connection_array;
+  signal result_value_regs  : gf_element_array;
+  signal eval_value_wires   : gf_element_array;
 
 begin
 
   -- Horner scheme multipliers
-  gen_parallel_evaluations : for j in 1 to NO_OF_PAR_EVALS generate
+  generate_parallel_evaluations : for j in 1 to NO_OF_PAR_EVALS generate
   begin
-    gen_horner_multipliers : for i in 0 to NO_OF_COEFS-1 generate
+    generate_horner_multipliers : for i in 0 to NO_OF_COEFS-1 generate
     begin
-      gen_top_multipliers : if i = 0 generate
+      generate_top_multipliers : if i = 0 generate
       begin
         horner_multiplier : entity work.gf_horner_multiplier(rtl)
           generic map (
@@ -61,9 +61,9 @@ begin
             product_in  => eval_value_wires(j),
             product_out => connections(j,i+1)
           );
-      end generate gen_top_multipliers;
+      end generate generate_top_multipliers;
 
-      gen_lower_multipliers : if i > 0 generate
+      generate_lower_multipliers : if i > 0 generate
       begin
         horner_multiplier : entity work.gf_horner_multiplier(rtl)
           generic map (
@@ -76,11 +76,11 @@ begin
             product_in  => connections(j,i),
             product_out => connections(j,i+1)
           );
-      end generate gen_lower_multipliers;
-    end generate gen_horner_multipliers;
-  end generate gen_parallel_evaluations;
+      end generate generate_lower_multipliers;
+    end generate generate_horner_multipliers;
+  end generate generate_parallel_evaluations;
 
-  clock_proc : process (clock, reset)
+  clock_process : process (clock, reset)
   begin
     if reset = '1' then
       result_value_regs <= (OTHERS => GF_ZERO);
@@ -91,9 +91,9 @@ begin
         end loop;
       end if;
     end if;
-  end process clock_proc;
+  end process clock_process;
 
-  comb_proc : process(result_value_regs, new_calculation, start_values)
+  combinational_process : process(result_value_regs, new_calculation, start_values)
   begin
     for i in 1 to NO_OF_PAR_EVALS loop
       if new_calculation = '1' then
@@ -105,6 +105,6 @@ begin
       -- output
       result_values(result_values'high-(i-1)*M downto result_values'length-i*M) <= result_value_regs(i);
     end loop;
-  end process comb_proc;
+  end process combinational_process;
 
 end rtl;

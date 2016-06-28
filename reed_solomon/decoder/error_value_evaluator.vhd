@@ -26,20 +26,20 @@ end entity;
 architecture rtl of error_value_evaluator is
   constant M                : natural := GF_POLYNOMIAL'length-1;
 
-  subtype gf_elem is std_logic_vector(M-1 downto 0);
-  type gf_array_desc_t is array(NO_OF_SYNDROMES-1 downto 0) of gf_elem;
+  subtype gf_element is std_logic_vector(M-1 downto 0);
+  type gf_array_desc_t is array(NO_OF_SYNDROMES-1 downto 0) of gf_element;
   type calculator_state_t is (IDLE, CALCULATING);
 
-  constant GF_ZERO  : gf_elem := (OTHERS => '0');
-  constant GF_ONE   : gf_elem := (0 => '1', OTHERS => '0');
+  constant GF_ZERO  : gf_element := (OTHERS => '0');
+  constant GF_ONE   : gf_element := (0 => '1', OTHERS => '0');
 
-  signal n                : natural range 1 to NO_OF_SYNDROMES; -- polynomial coefficient iterator
-  signal error_eval_coef    : gf_elem;                            -- polynomial coefficient
-  signal mul_outputs      : gf_array_desc_t;                    -- outputs from multipliers
+  signal n                  : natural range 1 to NO_OF_SYNDROMES; -- polynomial coefficient iterator
+  signal error_eval_coef    : gf_element;                         -- polynomial coefficient
+  signal multiplier_outputs : gf_array_desc_t;                    -- outputs from multipliers
   signal error_eval         : gf_array_desc_t;                    -- error evaluator polynomial
   signal error_locator      : gf_array_desc_t;                    -- error locator polynomial
-  signal syndromes        : gf_array_desc_t;                    -- syndrome values
-  signal calculator_state : calculator_state_t;                 -- state of module
+  signal syndromes          : gf_array_desc_t;                    -- syndrome values
+  signal calculator_state   : calculator_state_t;                 -- state of module
 
 begin
 
@@ -54,9 +54,9 @@ begin
         GF_POLYNOMIAL => GF_POLYNOMIAL
       )
       port map (
-        mul_a   => syndromes(i),
-        mul_b   => error_locator(i),
-        product => mul_outputs(i)
+        multiplicand_a  => syndromes(i),
+        multiplicand_b  => error_locator(i),
+        product         => multiplier_outputs(i)
       );
   end generate multipliers;
 
@@ -121,13 +121,13 @@ begin
     end if;
   end process clock_process;
 
-  combinatorial_process : process( mul_outputs )
-    variable var_error_eval_coef  : gf_elem;
+  combinatorial_process : process( multiplier_outputs )
+    variable var_error_eval_coef  : gf_element;
   begin
     -- add multiplication products together
     var_error_eval_coef   := GF_ZERO;
-    for i in mul_outputs'range(1) loop
-      var_error_eval_coef := mul_outputs(i) XOR var_error_eval_coef;
+    for i in multiplier_outputs'range(1) loop
+      var_error_eval_coef := multiplier_outputs(i) XOR var_error_eval_coef;
     end loop;
     error_eval_coef <= var_error_eval_coef;
 

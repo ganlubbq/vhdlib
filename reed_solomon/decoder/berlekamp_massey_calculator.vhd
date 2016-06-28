@@ -25,33 +25,33 @@ end entity;
 architecture rtl of berlekamp_massey_calculator is
   constant M              : natural := GF_POLYNOMIAL'length-1;
 
-  subtype gf_elem         is std_logic_vector(M-1 downto 0);
-  type gf_array_desc_t    is array(NO_OF_SYNDROMES-1 downto 0) of gf_elem;
+  subtype gf_element      is std_logic_vector(M-1 downto 0);
+  type gf_array_desc_t    is array(NO_OF_SYNDROMES-1 downto 0) of gf_element;
   type calculator_state_t is (IDLE, CALCULATING);
 
-  constant GF_ZERO        : gf_elem := (OTHERS => '0');
-  constant GF_ONE         : gf_elem := (0 => '1', OTHERS => '0');
+  constant GF_ZERO                : gf_element := (OTHERS => '0');
+  constant GF_ONE                 : gf_element := (0 => '1', OTHERS => '0');
 
-  signal L                : natural range 0 to NO_OF_SYNDROMES; -- current number of assumed errors
-  signal n                : natural range 0 to NO_OF_SYNDROMES;
-  signal k                : natural range 1 to NO_OF_SYNDROMES;
-  signal d                : gf_elem;          -- discrepancy
-  signal d_mul_a_inputs   : gf_array_desc_t;
-  signal d_mul_b_inputs   : gf_array_desc_t;
-  signal d_mul_outputs    : gf_array_desc_t;
-  signal d_prev           : gf_elem;          -- previous value of discrepancy
-  signal d_prev_inv       : gf_elem;          -- inverse of d_prev
-  signal inv_mux          : gf_elem;
-  signal use_d_prev_inv   : std_logic;        -- when '1' use d_prev_inv for next calculation step, else use d_inv
-  signal d_inv            : gf_elem;          -- inverse of d
-  signal d_d_prev_inv     : gf_elem;
-  signal cx               : gf_array_desc_t;
-  signal cx_new           : gf_array_desc_t;  -- cx_new = cx - d_d_prev_inv * cx_prev
-  signal cx_adj_inputs    : gf_array_desc_t;
-  signal cx_adj_outputs   : gf_array_desc_t;
-  signal cx_prev          : gf_array_desc_t;
-  signal syndromes        : gf_array_desc_t;
-  signal calculator_state : calculator_state_t;
+  signal L                        : natural range 0 to NO_OF_SYNDROMES; -- current number of assumed errors
+  signal n                        : natural range 0 to NO_OF_SYNDROMES;
+  signal k                        : natural range 1 to NO_OF_SYNDROMES;
+  signal d                        : gf_element;          -- discrepancy
+  signal d_multiplicand_a_inputs  : gf_array_desc_t;
+  signal d_multiplicand_b_inputs  : gf_array_desc_t;
+  signal d_multiplicand_outputs   : gf_array_desc_t;
+  signal d_prev                   : gf_element;          -- previous value of discrepancy
+  signal d_prev_inv               : gf_element;          -- inverse of d_prev
+  signal inv_mux                  : gf_element;
+  signal use_d_prev_inv           : std_logic;        -- when '1' use d_prev_inv for next calculation step, else use d_inv
+  signal d_inv                    : gf_element;          -- inverse of d
+  signal d_d_prev_inv             : gf_element;
+  signal cx                       : gf_array_desc_t;
+  signal cx_new                   : gf_array_desc_t;  -- cx_new = cx - d_d_prev_inv * cx_prev
+  signal cx_adj_inputs            : gf_array_desc_t;
+  signal cx_adj_outputs           : gf_array_desc_t;
+  signal cx_prev                  : gf_array_desc_t;
+  signal syndromes                : gf_array_desc_t;
+  signal calculator_state         : calculator_state_t;
 
 begin
 
@@ -66,9 +66,9 @@ begin
         GF_POLYNOMIAL => GF_POLYNOMIAL
       )
       port map (
-        mul_a   => d_mul_a_inputs(i),
-        mul_b   => d_mul_b_inputs(i),
-        product => d_mul_outputs(i)
+        multiplicand_a  => d_multiplicand_a_inputs(i),
+        multiplicand_b  => d_multiplicand_b_inputs(i),
+        product         => d_multiplicand_outputs(i)
       );
   end generate discrepancy_multipliers;
 
@@ -79,9 +79,9 @@ begin
         GF_POLYNOMIAL => GF_POLYNOMIAL
       )
       port map (
-        mul_a   => cx_adj_inputs(i),
-        mul_b   => d_d_prev_inv,
-        product => cx_adj_outputs(i)
+        multiplicand_a  => cx_adj_inputs(i),
+        multiplicand_b  => d_d_prev_inv,
+        product         => cx_adj_outputs(i)
       );
   end generate cx_adjustment_multipliers;
 
@@ -90,9 +90,9 @@ begin
       GF_POLYNOMIAL => GF_POLYNOMIAL
     )
     port map (
-      mul_a   => d,
-      mul_b   => inv_mux,
-      product => d_d_prev_inv
+      multiplicand_a  => d,
+      multiplicand_b  => inv_mux,
+      product         => d_d_prev_inv
     );
 
   inverse_d_prev_table : entity work.gf_lookup_table(rtl)
@@ -199,9 +199,9 @@ begin
     end if;
   end process clock_proc;
 
-  comb_proc : process(  d_mul_a_inputs,
-                        d_mul_b_inputs,
-                        d_mul_outputs,
+  comb_proc : process(  d_multiplicand_a_inputs,
+                        d_multiplicand_b_inputs,
+                        d_multiplicand_outputs,
                         syndromes,
                         L,
                         k,
@@ -213,22 +213,22 @@ begin
                         d_prev_inv,
                         d_inv
                       )
-    variable var_d        : gf_elem;
-    variable var_cx_new   : gf_elem;
+    variable var_d        : gf_element;
+    variable var_cx_new   : gf_element;
   begin
     -- set inputs for discrepancy multipliers input a (C(x) coefficients)
-    d_mul_a_inputs <= (OTHERS => GF_ZERO);
-    for i in d_mul_a_inputs'range(1) loop
+    d_multiplicand_a_inputs <= (OTHERS => GF_ZERO);
+    for i in d_multiplicand_a_inputs'range(1) loop
       if L >= i then
-        d_mul_a_inputs(i) <= cx(i);
+        d_multiplicand_a_inputs(i) <= cx(i);
       end if;
     end loop;
 
     -- set inputs for discrepancy multipliers input b (syndromes)
-    d_mul_b_inputs <= (OTHERS => GF_ZERO);
-    for i in d_mul_b_inputs'range(1) loop
+    d_multiplicand_b_inputs <= (OTHERS => GF_ZERO);
+    for i in d_multiplicand_b_inputs'range(1) loop
       if L >= i then
-        d_mul_b_inputs(i) <= syndromes(i);
+        d_multiplicand_b_inputs(i) <= syndromes(i);
       end if;
     end loop;
 
@@ -242,8 +242,8 @@ begin
 
     -- add discrepancy multiplication products together
     var_d := GF_ZERO;
-    for i in d_mul_outputs'range(1) loop
-      var_d := var_d XOR d_mul_outputs(i);
+    for i in d_multiplicand_outputs'range(1) loop
+      var_d := var_d XOR d_multiplicand_outputs(i);
     end loop;
     d <= var_d;
 

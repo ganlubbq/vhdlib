@@ -17,7 +17,7 @@ end vhdlib_tb;
 -- rs_lfsr_encoder --
 ---------------------
 architecture rs_lfsr_encoder_tb of vhdlib_tb is
-  constant GEN_POLYNOMIAL   : gf2m_poly_t       := GF2M_POLYNOMIAL_G709_GENERATOR;
+  constant GEN_POLYNOMIAL   : gf2m_polynomial   := GF2M_POLYNOMIAL_G709_GENERATOR;
   constant GF_POLYNOMIAL    : std_logic_vector  := BINARY_POLYNOMIAL_G709_GF;
 
   signal clock, reset, start_of_message, start_of_codeword, end_of_codeword : std_logic := '0';
