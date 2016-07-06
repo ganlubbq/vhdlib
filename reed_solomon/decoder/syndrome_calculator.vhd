@@ -10,7 +10,7 @@ use work.vhdlib_package.all;
 entity syndrome_calculator is
   generic (
     GF_POLYNOMIAL   : std_logic_vector  := BINARY_POLYNOMIAL_G709_GF; -- irreducible, binary polynomial
-    NO_OF_COEFS     : natural           := 3;                         -- number of coefficient symbols to process at a time; must divide polynomial (i.e. 0 remainder).
+    NO_OF_COEFS     : natural           := 3;                         -- number of coefficient symbols to process at a time; must divide polynomial degree (i.e. 0 remainder).
     NO_OF_SYNDROMES : natural           := 6                          -- number of syndromes to calculate
   );
   port (
@@ -27,17 +27,17 @@ architecture rtl of syndrome_calculator is
   constant M  : natural := GF_POLYNOMIAL'length-1;
 
   -- generate the values of alpha^1 through alpha^NO_OF_SYNDROMES
-  function gen_alpha_powers return std_logic_vector is
-    variable ret_vec : std_logic_vector(NO_OF_SYNDROMES*M-1 downto 0);
+  function generate_alpha_powers return std_logic_vector is
+    variable alpha_powers : std_logic_vector(NO_OF_SYNDROMES*M-1 downto 0);
   begin
     for i in 1 to NO_OF_SYNDROMES loop
-      ret_vec(ret_vec'high-(i-1)*M downto ret_vec'length-i*M) :=  primitive_element_exponentiation(i, GF_POLYNOMIAL);
+      alpha_powers(alpha_powers'high-(i-1)*M downto alpha_powers'length-i*M) :=  primitive_element_exponentiation(i, GF_POLYNOMIAL);
     end loop;
 
-    return ret_vec;
-  end function gen_alpha_powers;
+    return alpha_powers;
+  end function generate_alpha_powers;
 
-  constant alpha_powers : std_logic_vector(NO_OF_SYNDROMES*M-1 downto 0)  := gen_alpha_powers;
+  constant alpha_powers : std_logic_vector(NO_OF_SYNDROMES*M-1 downto 0)  := generate_alpha_powers;
 
 begin
 
@@ -56,10 +56,10 @@ begin
       clock           => clock,
       reset           => reset,
       clock_enable    => clock_enable,
-      new_calculation      => new_calculation,
-      coefficients  => coefficients,
-      eval_values   => alpha_powers,
-      start_values  => (OTHERS => '0'),
-      result_values => syndromes
+      new_calculation => new_calculation,
+      coefficients    => coefficients,
+      eval_values     => alpha_powers,
+      start_values    => (OTHERS => '0'),
+      result_values   => syndromes
     );
 end rtl;
