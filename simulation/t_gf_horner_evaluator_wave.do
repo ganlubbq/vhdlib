@@ -7,7 +7,7 @@ add wave -noupdate /vhdlib_tb/dut/clock_enable
 add wave -noupdate /vhdlib_tb/dut/new_calculation
 add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/coefficients
 add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/start_values
-add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/eval_values
+add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/evaluation_values
 add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/result_values
 
 TreeUpdate [SetDefaultTree]

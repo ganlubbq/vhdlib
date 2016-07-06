@@ -51,6 +51,8 @@ begin
       product         => product
     );
 
+
+  -- Pad coefficient before outputting as it may not have same symbol width as the calculated product.
   padding_process : process (coefficient)
   begin
     padded_coefficient                     <= (OTHERS => '0');

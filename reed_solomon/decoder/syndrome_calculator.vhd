@@ -37,13 +37,13 @@ architecture rtl of syndrome_calculator is
     variable alpha_powers : std_logic_vector(NO_OF_SYNDROMES*M-1 downto 0);
   begin
     for i in 1 to NO_OF_SYNDROMES loop
-      alpha_powers(alpha_powers'high-(i-1)*M downto alpha_powers'length-i*M) :=  primitive_element_exponentiation(i, GF_POLYNOMIAL);
+      alpha_powers(alpha_powers'high-(i-1)*M downto alpha_powers'length-i*M) := primitive_element_exponentiation(i, GF_POLYNOMIAL);
     end loop;
 
     return alpha_powers;
   end function generate_alpha_powers;
 
-  constant alpha_powers : std_logic_vector(NO_OF_SYNDROMES*M-1 downto 0)  := generate_alpha_powers;
+  constant alpha_powers : std_logic_vector(NO_OF_SYNDROMES*M-1 downto 0) := generate_alpha_powers;
 
 begin
 
@@ -59,13 +59,13 @@ begin
       SYMBOL_WIDTH                => M
     )
     port map (
-      clock           => clock,
-      reset           => reset,
-      clock_enable    => clock_enable,
-      new_calculation => new_calculation,
-      coefficients    => coefficients,
-      eval_values     => alpha_powers,
-      start_values    => (OTHERS => '0'),
-      result_values   => syndromes
+      clock             => clock,
+      reset             => reset,
+      clock_enable      => clock_enable,
+      new_calculation   => new_calculation,
+      coefficients      => coefficients,
+      evaluation_values => alpha_powers,
+      start_values      => (OTHERS => '0'),
+      result_values     => syndromes
     );
 end rtl;

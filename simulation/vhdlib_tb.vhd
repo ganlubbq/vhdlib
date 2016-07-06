@@ -52,15 +52,15 @@ begin
     variable read_line : line;
     variable message_stm : std_logic_vector(7 downto 0);
     variable start_of_message_stm  : std_logic;
-    file vector_file : text open read_mode is "t_rs_lfsr_encoder.txt";
+    file stimuli_file : text open read_mode is "t_rs_lfsr_encoder.txt";
   begin
 
     reset <= '1';
     wait for 6 ns;
     reset <= '0';
 
-    while not endfile(vector_file) loop
-      readline(vector_file, read_line);
+    while not endfile(stimuli_file) loop
+      readline(stimuli_file, read_line);
       read(read_line, start_of_message_stm);
       read(read_line, message_stm);
 
@@ -83,16 +83,16 @@ begin
     variable message_stm : std_logic_vector(7 downto 0);
     variable start_of_message_stm  : std_logic;
     variable message_int, codeword_int : integer;
-    file vector_file : text open read_mode is "t_rs_lfsr_encoder.txt";
+    file stimuli_file : text open read_mode is "t_rs_lfsr_encoder.txt";
   begin
 
     wait until start_of_codeword = '1';
 
-    while not endfile(vector_file) loop
+    while not endfile(stimuli_file) loop
 
       wait for 2 ns;
 
-      readline(vector_file, read_line);
+      readline(stimuli_file, read_line);
       read(read_line, start_of_message_stm);
       read(read_line, message_stm);
 
@@ -126,14 +126,14 @@ architecture gf_horner_evaluator_tb of vhdlib_tb is
   constant SYMBOL_WIDTH               : natural := 4;
   constant M                          : natural := GF_POLYNOMIAL'length-1;
 
-  signal clock            : std_logic;
-  signal reset            : std_logic;
-  signal clock_enable     : std_logic;
-  signal new_calculation  : std_logic;
-  signal coefficients     : std_logic_vector(NO_OF_COEFFICIENTS*SYMBOL_WIDTH-1 downto 0);
-  signal eval_values      : std_logic_vector(NO_OF_PARALLEL_EVALUATIONS*M-1 downto 0);
-  signal start_values     : std_logic_vector(NO_OF_PARALLEL_EVALUATIONS*M-1 downto 0);
-  signal result_values    : std_logic_vector(NO_OF_PARALLEL_EVALUATIONS*M-1 downto 0);
+  signal clock              : std_logic;
+  signal reset              : std_logic;
+  signal clock_enable       : std_logic;
+  signal new_calculation    : std_logic;
+  signal coefficients       : std_logic_vector(NO_OF_COEFFICIENTS*SYMBOL_WIDTH-1 downto 0);
+  signal evaluation_values  : std_logic_vector(NO_OF_PARALLEL_EVALUATIONS*M-1 downto 0);
+  signal start_values       : std_logic_vector(NO_OF_PARALLEL_EVALUATIONS*M-1 downto 0);
+  signal result_values      : std_logic_vector(NO_OF_PARALLEL_EVALUATIONS*M-1 downto 0);
 
 begin
 
@@ -145,14 +145,14 @@ begin
                 SYMBOL_WIDTH                => SYMBOL_WIDTH
               )
   port map (
-             clock           => clock,
-             reset           => reset,
-             clock_enable    => clock_enable,
-             new_calculation => new_calculation,
-             coefficients    => coefficients,
-             eval_values     => eval_values,
-             start_values    => start_values,
-             result_values   => result_values
+             clock              => clock,
+             reset              => reset,
+             clock_enable       => clock_enable,
+             new_calculation    => new_calculation,
+             coefficients       => coefficients,
+             evaluation_values  => evaluation_values,
+             start_values       => start_values,
+             result_values      => result_values
            );
 
   clock_process : process
@@ -168,13 +168,13 @@ begin
     variable new_calculation_stm  : std_logic;
     variable coefficient_stm      : integer;
     variable value_stm            : integer;
-    file vector_file              : text open read_mode is "t_gf_horner_evaluator.txt";
+    file stimuli_file              : text open read_mode is "t_gf_horner_evaluator.txt";
   begin
 
     new_calculation <= '0';
     clock_enable <= '0';
     coefficients <= (OTHERS => '0');
-    eval_values <= (OTHERS => '0');
+    evaluation_values <= (OTHERS => '0');
     start_values <= (OTHERS => '0');
 
     reset <= '1';
@@ -182,8 +182,8 @@ begin
     reset <= '0';
     clock_enable  <= '1';
 
-    while not endfile(vector_file) loop
-      readline(vector_file, read_line);
+    while not endfile(stimuli_file) loop
+      readline(stimuli_file, read_line);
       read(read_line, new_calculation_stm);
       new_calculation <= new_calculation_stm;
 
@@ -194,7 +194,7 @@ begin
 
       for i in 0 to NO_OF_PARALLEL_EVALUATIONS-1 loop
         read(read_line, value_stm);
-        eval_values(eval_values'high-i*M downto eval_values'length-(i+1)*M) <= std_logic_vector(to_unsigned(value_stm,M));
+        evaluation_values(evaluation_values'high-i*M downto evaluation_values'length-(i+1)*M) <= std_logic_vector(to_unsigned(value_stm,M));
       end loop;
 
       for i in 0 to NO_OF_PARALLEL_EVALUATIONS-1 loop
@@ -215,7 +215,7 @@ begin
     new_calculation <= '0';
     clock_enable <= '0';
     coefficients <= (OTHERS => '0');
-    eval_values <= (OTHERS => '0');
+    evaluation_values <= (OTHERS => '0');
     start_values <= (OTHERS => '0');
     report "HAS ENDED!";
     wait;
@@ -270,7 +270,7 @@ begin
     variable new_calculation_stm     : std_logic;
     variable coefficient_stm  : integer;
     variable syndrome_stm     : integer;
-    file vector_file          : text open read_mode is "t_syndrome_calculator.txt";
+    file stimuli_file          : text open read_mode is "t_syndrome_calculator.txt";
   begin
 
     new_calculation      <= '0';
@@ -282,8 +282,8 @@ begin
     reset         <= '0';
     clock_enable  <= '1';
 
-    while not endfile(vector_file) loop
-      readline(vector_file, read_line);
+    while not endfile(stimuli_file) loop
+      readline(stimuli_file, read_line);
       read(read_line, new_calculation_stm);
       new_calculation <= new_calculation_stm;
 
@@ -322,8 +322,8 @@ architecture gf_lookup_table_tb of vhdlib_tb is
   constant TABLE_TYPE    : gf_table_type    := gf_table_type_zech_logarithm;
 
   signal clock        : std_logic;
-  signal element_in    : std_logic_vector(M-1 downto 0);
-  signal element_out   : std_logic_vector(M-1 downto 0);
+  signal element_in   : std_logic_vector(M-1 downto 0);
+  signal element_out  : std_logic_vector(M-1 downto 0);
 
 begin
 
@@ -333,7 +333,7 @@ begin
     TABLE_TYPE    => TABLE_TYPE
   )
   port map (
-    clock      => clock,
+    clock       => clock,
     element_in  => element_in,
     element_out => element_out
   );
@@ -347,18 +347,18 @@ begin
   end process clock_process;
 
   stm_process : process
-    variable read_line       : line;
-    variable element_stm     : integer;
-    file vector_file      : text open read_mode is "t_gf_lookup_table.txt";
+    variable read_line    : line;
+    variable element_stm  : integer;
+    file stimuli_file     : text open read_mode is "t_gf_lookup_table.txt";
   begin
-    element_in       <= (OTHERS => '0');
+    element_in <= (OTHERS => '0');
     wait for 6 ns;
 
-    while not endfile(vector_file) loop
+    while not endfile(stimuli_file) loop
 
-      readline(vector_file, read_line);
+      readline(stimuli_file, read_line);
       read(read_line, element_stm);
-      element_in       <= std_logic_vector(to_unsigned(element_stm,M));
+      element_in <= std_logic_vector(to_unsigned(element_stm,M));
 
       wait for 10 ns;
 
@@ -406,10 +406,10 @@ begin
     variable eval_value_stm   : integer;
     variable product_in_stm   : integer;
     variable product_out_stm  : integer;
-    file vector_file : text open read_mode is "t_gf_horner_multiplier.txt";
+    file stimuli_file : text open read_mode is "t_gf_horner_multiplier.txt";
   begin
-    while not endfile(vector_file) loop
-      readline(vector_file, read_line);
+    while not endfile(stimuli_file) loop
+      readline(stimuli_file, read_line);
       read(read_line, coefficient_stm);
       read(read_line, product_in_stm);
       read(read_line, eval_value_stm);
@@ -454,13 +454,13 @@ begin
     variable read_line : line;
     variable data_in_stm  : std_logic_vector(DATA_WIDTH-1 downto 0);
     variable crc_out_check  : std_logic_vector(POLYNOMIAL'length-2 downto 0);
-    file vector_file : text open read_mode is "t_crc_generator_parallel.txt";
+    file stimuli_file : text open read_mode is "t_crc_generator_parallel.txt";
   begin
 
     crc_in <= (OTHERS => '0');
 
-    while not endfile(vector_file) loop
-      readline(vector_file, read_line);
+    while not endfile(stimuli_file) loop
+      readline(stimuli_file, read_line);
       read(read_line, data_in_stm);
       read(read_line, crc_out_check);
 
@@ -511,11 +511,11 @@ begin
     variable read_line : line;
     variable prbs_in_stm  : std_logic_vector(DATA_WIDTH-1 downto 0);
     variable prbs_out_check : std_logic_vector(DATA_WIDTH-1 downto 0);
-    file vector_file : text open read_mode is "t_prbs_generator_parallel.txt";
+    file stimuli_file : text open read_mode is "t_prbs_generator_parallel.txt";
   begin
 
-    while not endfile(vector_file) loop
-      readline(vector_file, read_line);
+    while not endfile(stimuli_file) loop
+      readline(stimuli_file, read_line);
       read(read_line, prbs_in_stm);
       read(read_line, prbs_out_check);
 
@@ -583,7 +583,7 @@ begin
   stm_process : process
     variable read_line       : line;
     variable gf_element_stm  : integer;
-    file vector_file      : text open read_mode is "t_berlekamp_massey_calculator.txt";
+    file stimuli_file      : text open read_mode is "t_berlekamp_massey_calculator.txt";
   begin
 
     new_calculation      <= '0';
@@ -593,8 +593,8 @@ begin
     wait for 6 ns;
     reset <= '0';
 
-    while not endfile(vector_file) loop
-      readline(vector_file, read_line);
+    while not endfile(stimuli_file) loop
+      readline(stimuli_file, read_line);
       new_calculation <= '1';
 
       for i in 0 to NO_OF_SYNDROMES-1 loop
@@ -672,7 +672,7 @@ begin
   stm_process : process
     variable read_line       : line;
     variable gf_element_stm  : integer;
-    file vector_file      : text open read_mode is "t_error_value_evaluator.txt";
+    file stimuli_file      : text open read_mode is "t_error_value_evaluator.txt";
   begin
 
     new_calculation        <= '0';
@@ -683,8 +683,8 @@ begin
     wait for 6 ns;
     reset <= '0';
 
-    while not endfile(vector_file) loop
-      readline(vector_file, read_line);
+    while not endfile(stimuli_file) loop
+      readline(stimuli_file, read_line);
       new_calculation <= '1';
 
       for i in 0 to NO_OF_SYNDROMES-1 loop
@@ -767,7 +767,7 @@ end error_value_evaluator_tb;
 --   stm_process : process
 --     variable read_line       : line;
 --     variable gf_element_stm  : integer;
---     file vector_file      : text open read_mode is "t_forney_calculator.txt";
+--     file stimuli_file      : text open read_mode is "t_forney_calculator.txt";
 --   begin
 -- 
 --     new_calculation      <= '0';
@@ -778,8 +778,8 @@ end error_value_evaluator_tb;
 --     wait for 6 ns;
 --     reset <= '0';
 -- 
---     while not endfile(vector_file) loop
---       readline(vector_file, read_line);
+--     while not endfile(stimuli_file) loop
+--       readline(stimuli_file, read_line);
 --       new_calculation <= '1';
 -- 
 --       for i in 0 to NO_OF_CORR_ERRS-1 loop
@@ -866,7 +866,7 @@ begin
   stm_process : process
     variable read_line       : line;
     variable gf_element_stm  : integer;
-    file vector_file      : text open read_mode is "t_chien_search.txt";
+    file stimuli_file      : text open read_mode is "t_chien_search.txt";
   begin
 
     new_calculation        <= '0';
@@ -876,8 +876,8 @@ begin
     wait for 6 ns;
     reset <= '0';
 
-    while not endfile(vector_file) loop
-      readline(vector_file, read_line);
+    while not endfile(stimuli_file) loop
+      readline(stimuli_file, read_line);
       new_calculation <= '1';
 
       for i in 0 to NO_OF_SYNDROMES-1 loop

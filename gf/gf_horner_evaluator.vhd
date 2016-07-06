@@ -13,7 +13,7 @@ entity gf_horner_evaluator is
     GF_POLYNOMIAL : std_logic_vector := BINARY_POLYNOMIAL_G709_GF;
 
     -- Number of polynomial evaluations done in parallel.
-    -- If syndromes are to be calculated the eval_values signal should contain
+    -- If syndromes are to be calculated the evaluation_values signal should contain
     -- the values alpha^1 through alpha^NO_OF_PARALLEL_EVALUATIONS are used for evaluation.
     NO_OF_PARALLEL_EVALUATIONS : natural := 3;
 
@@ -30,25 +30,25 @@ entity gf_horner_evaluator is
     new_calculation : in  std_logic;                     
 
     -- polynomial coefficients; highest order symbol on MSBs, descending.
-    coefficients    : in  std_logic_vector(NO_OF_COEFFICIENTS*SYMBOL_WIDTH-1 downto 0);
-    eval_values     : in  std_logic_vector(NO_OF_PARALLEL_EVALUATIONS*(GF_POLYNOMIAL'length-1)-1 downto 0);
-    start_values    : in  std_logic_vector(NO_OF_PARALLEL_EVALUATIONS*(GF_POLYNOMIAL'length-1)-1 downto 0);
-    result_values   : out std_logic_vector(NO_OF_PARALLEL_EVALUATIONS*(GF_POLYNOMIAL'length-1)-1 downto 0)
+    coefficients      : in  std_logic_vector(NO_OF_COEFFICIENTS*SYMBOL_WIDTH-1 downto 0);
+    evaluation_values : in  std_logic_vector(NO_OF_PARALLEL_EVALUATIONS*(GF_POLYNOMIAL'length-1)-1 downto 0);
+    start_values      : in  std_logic_vector(NO_OF_PARALLEL_EVALUATIONS*(GF_POLYNOMIAL'length-1)-1 downto 0);
+    result_values     : out std_logic_vector(NO_OF_PARALLEL_EVALUATIONS*(GF_POLYNOMIAL'length-1)-1 downto 0)
   );
 end entity;
 
 architecture rtl of gf_horner_evaluator is
   constant M  : natural := GF_POLYNOMIAL'length-1;
 
-  subtype gf_element    is std_logic_vector(M-1 downto 0);
+  subtype gf_element is std_logic_vector(M-1 downto 0);
   type connection_array is array(1 to NO_OF_PARALLEL_EVALUATIONS, 1 to NO_OF_COEFFICIENTS) of gf_element;
   type gf_element_array is array(1 to NO_OF_PARALLEL_EVALUATIONS) of gf_element;
 
   constant GF_ZERO  : gf_element := (OTHERS => '0');
 
-  signal connections        : connection_array;
-  signal result_value_regs  : gf_element_array;
-  signal eval_value_wires   : gf_element_array;
+  signal connections            : connection_array;
+  signal result_value_registers : gf_element_array;
+  signal evaluation_value_wires : gf_element_array;
 
 begin
 
@@ -66,8 +66,8 @@ begin
           )
           port map (
             coefficient       => coefficients(coefficients'high downto coefficients'length-SYMBOL_WIDTH),
-            evaluation_value  => eval_values(eval_values'high-(j-1)*M downto eval_values'length-(j)*M),
-            product_in        => eval_value_wires(j),
+            evaluation_value  => evaluation_values(evaluation_values'high-(j-1)*M downto evaluation_values'length-(j)*M),
+            product_in        => evaluation_value_wires(j),
             product_out       => connections(j,i+1)
           );
       end generate generate_top_multipliers;
@@ -81,7 +81,7 @@ begin
           )
           port map (
             coefficient       => coefficients(coefficients'high-i*SYMBOL_WIDTH downto coefficients'length-(i+1)*SYMBOL_WIDTH),
-            evaluation_value  => eval_values(eval_values'high-(j-1)*M downto eval_values'length-(j)*M),
+            evaluation_value  => evaluation_values(evaluation_values'high-(j-1)*M downto evaluation_values'length-(j)*M),
             product_in        => connections(j,i),
             product_out       => connections(j,i+1)
           );
@@ -89,30 +89,34 @@ begin
     end generate generate_horner_multipliers;
   end generate generate_parallel_evaluations;
 
+
+  -- Capture intermediate results at each rising clock edge.
   clock_process : process (clock, reset)
   begin
     if reset = '1' then
-      result_value_regs <= (OTHERS => GF_ZERO);
+      result_value_registers <= (OTHERS => GF_ZERO);
     elsif rising_edge(clock) then
       if clock_enable = '1' then
         for i in 1 to NO_OF_PARALLEL_EVALUATIONS loop
-          result_value_regs(i)  <= connections(i,NO_OF_COEFFICIENTS);
+          result_value_registers(i)  <= connections(i,NO_OF_COEFFICIENTS);
         end loop;
       end if;
     end if;
   end process clock_process;
 
-  combinational_process : process(result_value_regs, new_calculation, start_values)
+  -- When a new calculation starts the input to the multipliers must the start values.
+  -- When continuing an ongoing calculation the input to the multipliers must be their output from the previous interation.
+  combinational_process : process(result_value_registers, new_calculation, start_values)
   begin
     for i in 1 to NO_OF_PARALLEL_EVALUATIONS loop
       if new_calculation = '1' then
-        eval_value_wires(i) <= start_values(start_values'high-(i-1)*M downto start_values'length-i*M);
+        evaluation_value_wires(i) <= start_values(start_values'high-(i-1)*M downto start_values'length-i*M);
       else
-        eval_value_wires(i) <= result_value_regs(i);
+        evaluation_value_wires(i) <= result_value_registers(i);
       end if;
 
-      -- output
-      result_values(result_values'high-(i-1)*M downto result_values'length-i*M) <= result_value_regs(i);
+      -- Output
+      result_values(result_values'high-(i-1)*M downto result_values'length-i*M) <= result_value_registers(i);
     end loop;
   end process combinational_process;
 
