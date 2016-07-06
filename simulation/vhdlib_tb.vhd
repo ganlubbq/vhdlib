@@ -543,11 +543,11 @@ end prbs_generator_parallel_tb;
 ---------------------------------
 
 architecture berlekamp_massey_calculator_tb of vhdlib_tb is
-  constant GF_POLYNOMIAL    : std_logic_vector := BINARY_POLYNOMIAL_DECIMAL_19; -- irreducible, binary polynomial
-  constant SYMBOL_WIDTH     : integer := 4;
-  constant NO_OF_CORR_ERRS  : integer := 3;
-  constant NO_OF_SYNDROMES  : integer := 2*NO_OF_CORR_ERRS;
-  constant M                : integer := GF_POLYNOMIAL'length-1;
+  constant GF_POLYNOMIAL            : std_logic_vector := BINARY_POLYNOMIAL_DECIMAL_19; -- irreducible, binary polynomial
+  constant SYMBOL_WIDTH             : integer := 4;
+  constant NO_OF_CORRECTABLE_ERRORS : integer := 3;
+  constant NO_OF_SYNDROMES          : integer := 2*NO_OF_CORRECTABLE_ERRORS;
+  constant M                        : integer := GF_POLYNOMIAL'length-1;
 
   signal clock              : std_logic;
   signal reset              : std_logic;
@@ -630,11 +630,11 @@ end berlekamp_massey_calculator_tb;
 ---------------------------
 
 architecture error_value_evaluator_tb of vhdlib_tb is
-  constant GF_POLYNOMIAL    : std_logic_vector := BINARY_POLYNOMIAL_DECIMAL_19; -- irreducible, binary polynomial
-  constant SYMBOL_WIDTH     : integer := 4;
-  constant NO_OF_CORR_ERRS  : integer := 3;
-  constant NO_OF_SYNDROMES  : integer := 2*NO_OF_CORR_ERRS;
-  constant M                : integer := GF_POLYNOMIAL'length-1;
+  constant GF_POLYNOMIAL            : std_logic_vector := BINARY_POLYNOMIAL_DECIMAL_19; -- irreducible, binary polynomial
+  constant SYMBOL_WIDTH             : integer := 4;
+  constant NO_OF_CORRECTABLE_ERRORS : integer := 3;
+  constant NO_OF_SYNDROMES          : integer := 2*NO_OF_CORRECTABLE_ERRORS;
+  constant M                        : integer := GF_POLYNOMIAL'length-1;
 
   signal clock              : std_logic;
   signal reset              : std_logic;
@@ -727,16 +727,16 @@ end error_value_evaluator_tb;
 
 -- architecture forney_calculator_tb of vhdlib_tb is
 --   constant GF_POLYNOMIAL    : std_logic_vector := BINARY_POLYNOMIAL_DECIMAL_19; -- irreducible, binary polynomial
---   constant NO_OF_CORR_ERRS  : integer := 3;
---   constant NO_OF_SYNDROMES  : integer := 2*NO_OF_CORR_ERRS;
+--   constant NO_OF_CORRECTABLE_ERRORS  : integer := 3;
+--   constant NO_OF_SYNDROMES  : integer := 2*NO_OF_CORRECTABLE_ERRORS;
 --   constant M                : integer := GF_POLYNOMIAL'length-1;
 -- 
 --   signal clock              : std_logic;
 --   signal reset              : std_logic;
 --   signal new_calculation         : std_logic;
---   signal error_roots_in     : std_logic_vector(NO_OF_CORR_ERRS*M-1 downto 0);
+--   signal error_roots_in     : std_logic_vector(NO_OF_CORRECTABLE_ERRORS*M-1 downto 0);
 --   signal error_eval_in      : std_logic_vector(NO_OF_SYNDROMES*M-1 downto 0);
---   signal error_values_out   : std_logic_vector(NO_OF_CORR_ERRS*M-1 downto 0);
+--   signal error_values_out   : std_logic_vector(NO_OF_CORRECTABLE_ERRORS*M-1 downto 0);
 --   signal ready            : std_logic;
 -- 
 -- begin
@@ -744,7 +744,7 @@ end error_value_evaluator_tb;
 --   dut : entity work.forney_calculator(rtl)
 --   generic map (
 --     GF_POLYNOMIAL   => GF_POLYNOMIAL,
---     NO_OF_CORR_ERRS => NO_OF_CORR_ERRS
+--     NO_OF_CORRECTABLE_ERRORS => NO_OF_CORRECTABLE_ERRORS
 --   )
 --   port map (
 --     clock             => clock,
@@ -782,7 +782,7 @@ end error_value_evaluator_tb;
 --       readline(stimuli_file, read_line);
 --       new_calculation <= '1';
 -- 
---       for i in 0 to NO_OF_CORR_ERRS-1 loop
+--       for i in 0 to NO_OF_CORRECTABLE_ERRORS-1 loop
 --         read(read_line, gf_element_stm);
 --         error_roots_in(error_roots_in'high-i*M downto error_roots_in'length-(i+1)*M) <= std_logic_vector(to_unsigned(gf_element_stm,M));
 --       end loop;
@@ -821,28 +821,28 @@ end error_value_evaluator_tb;
 ------------------
 
 architecture chien_search_tb of vhdlib_tb is
-  constant GF_POLYNOMIAL    : std_logic_vector := BINARY_POLYNOMIAL_DECIMAL_19; -- irreducible, binary polynomial
-  constant SYMBOL_WIDTH     : integer := 4;
-  constant NO_OF_CORR_ERRS  : integer := 3;
-  constant NO_OF_SYNDROMES  : integer := 2*NO_OF_CORR_ERRS;
-  constant M                : integer := GF_POLYNOMIAL'length-1;
+  constant GF_POLYNOMIAL            : std_logic_vector := BINARY_POLYNOMIAL_DECIMAL_19; -- irreducible, binary polynomial
+  constant SYMBOL_WIDTH             : integer := 4;
+  constant NO_OF_CORRECTABLE_ERRORS : integer := 3;
+  constant NO_OF_SYNDROMES          : integer := 2*NO_OF_CORRECTABLE_ERRORS;
+  constant M                        : integer := GF_POLYNOMIAL'length-1;
 
   signal clock                : std_logic;
   signal reset                : std_logic;
-  signal new_calculation           : std_logic;
+  signal new_calculation      : std_logic;
   signal error_locator_in     : std_logic_vector(NO_OF_SYNDROMES*M-1 downto 0);
-  signal ready              : std_logic;
-  signal error_roots_out      : std_logic_vector(NO_OF_CORR_ERRS*M-1 downto 0);
-  signal error_locations_out  : std_logic_vector(NO_OF_CORR_ERRS*M-1 downto 0);
-  signal sym_locations_out  : std_logic_vector(NO_OF_CORR_ERRS*M-1 downto 0);
+  signal ready                : std_logic;
+  signal error_roots_out      : std_logic_vector(NO_OF_CORRECTABLE_ERRORS*M-1 downto 0);
+  signal error_locations_out  : std_logic_vector(NO_OF_CORRECTABLE_ERRORS*M-1 downto 0);
+  signal sym_locations_out    : std_logic_vector(NO_OF_CORRECTABLE_ERRORS*M-1 downto 0);
 
 begin
 
   dut : entity work.chien_search(rtl)
   generic map (
-                GF_POLYNOMIAL   => GF_POLYNOMIAL,
-                NO_OF_CORR_ERRS => NO_OF_CORR_ERRS,
-                NO_OF_SYNDROMES => NO_OF_SYNDROMES
+                GF_POLYNOMIAL             => GF_POLYNOMIAL,
+                NO_OF_CORRECTABLE_ERRORS  => NO_OF_CORRECTABLE_ERRORS,
+                NO_OF_SYNDROMES           => NO_OF_SYNDROMES
               )
   port map (
              clock                 => clock,

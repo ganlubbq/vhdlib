@@ -147,7 +147,6 @@ begin
       error_locator_out   <= (OTHERS => '0');
     elsif rising_edge(clock) then
 
-      -- preassignments
       ready           <= '0';
       use_d_prev_inv  <= '1';
 
