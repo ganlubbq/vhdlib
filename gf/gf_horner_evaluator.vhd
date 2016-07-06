@@ -89,7 +89,6 @@ begin
     end generate generate_horner_multipliers;
   end generate generate_parallel_evaluations;
 
-
   -- Capture intermediate results at each rising clock edge.
   clock_process : process (clock, reset)
   begin

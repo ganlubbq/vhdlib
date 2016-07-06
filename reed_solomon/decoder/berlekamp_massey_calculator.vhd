@@ -9,16 +9,25 @@ use work.vhdlib_package.all;
 
 entity berlekamp_massey_calculator is
   generic (
-    GF_POLYNOMIAL   : std_logic_vector  := BINARY_POLYNOMIAL_G709_GF; -- irreducible, binary polynomial
+    -- Irreducible, binary polynomial.
+    GF_POLYNOMIAL   : std_logic_vector  := BINARY_POLYNOMIAL_G709_GF;
     NO_OF_SYNDROMES : natural           := 6
   );
   port (
     clock             : in  std_logic;
     reset             : in  std_logic;
-    new_calculation   : in  std_logic;                                                                -- when '1' a new calculation is started with the given syndromes
-    syndromes_in      : in  std_logic_vector(NO_OF_SYNDROMES*(GF_POLYNOMIAL'length-1)-1 downto 0);  -- lowest order syndrome at MSBs, ascending
-    ready             : out std_logic;                                                                -- when '1' the calculated error locator is ready
-    error_locator_out : out std_logic_vector(NO_OF_SYNDROMES*(GF_POLYNOMIAL'length-1)-1 downto 0)   -- highest order coefficient at MSBs, descending
+
+    -- When '1' a new calculation is started with the given syndromes.
+    new_calculation   : in  std_logic;
+
+    -- Lowest order syndrome at MSBs, ascending.
+    syndromes_in      : in  std_logic_vector(NO_OF_SYNDROMES*(GF_POLYNOMIAL'length-1)-1 downto 0);
+    
+    -- When '1' the calculated error-locator polynomial is ready.
+    ready             : out std_logic;
+   
+    -- Error-locator polyonomial. Highest order coefficient at MSBs, descending.
+    error_locator_out : out std_logic_vector(NO_OF_SYNDROMES*(GF_POLYNOMIAL'length-1)-1 downto 0)
   );
 end entity;
 
@@ -29,24 +38,24 @@ architecture rtl of berlekamp_massey_calculator is
   type gf_array_desc_t    is array(NO_OF_SYNDROMES-1 downto 0) of gf_element;
   type calculator_state_t is (IDLE, CALCULATING);
 
-  constant GF_ZERO                : gf_element := (OTHERS => '0');
-  constant GF_ONE                 : gf_element := (0 => '1', OTHERS => '0');
+  constant GF_ZERO  : gf_element := (OTHERS => '0');
+  constant GF_ONE   : gf_element := (0 => '1', OTHERS => '0');
 
   signal L                        : natural range 0 to NO_OF_SYNDROMES; -- current number of assumed errors
   signal n                        : natural range 0 to NO_OF_SYNDROMES;
   signal k                        : natural range 1 to NO_OF_SYNDROMES;
-  signal d                        : gf_element;          -- discrepancy
+  signal d                        : gf_element;         -- Discrepancy.
+  signal d_inv                    : gf_element;         -- GF inverse of d.
+  signal d_prev                   : gf_element;         -- Previous value of d.
+  signal d_prev_inv               : gf_element;         -- GF inverse of d_prev.
+  signal use_d_prev_inv           : std_logic;          -- When '1' use d_prev_inv for next calculation step, otherwise use d_inv.
   signal d_multiplicand_a_inputs  : gf_array_desc_t;
   signal d_multiplicand_b_inputs  : gf_array_desc_t;
   signal d_multiplicand_outputs   : gf_array_desc_t;
-  signal d_prev                   : gf_element;          -- previous value of discrepancy
-  signal d_prev_inv               : gf_element;          -- inverse of d_prev
   signal inv_mux                  : gf_element;
-  signal use_d_prev_inv           : std_logic;        -- when '1' use d_prev_inv for next calculation step, else use d_inv
-  signal d_inv                    : gf_element;          -- inverse of d
   signal d_d_prev_inv             : gf_element;
   signal cx                       : gf_array_desc_t;
-  signal cx_new                   : gf_array_desc_t;  -- cx_new = cx - d_d_prev_inv * cx_prev
+  signal cx_new                   : gf_array_desc_t;    -- cx_new = cx - d_d_prev_inv * cx_prev
   signal cx_adj_inputs            : gf_array_desc_t;
   signal cx_adj_outputs           : gf_array_desc_t;
   signal cx_prev                  : gf_array_desc_t;
@@ -121,7 +130,7 @@ begin
   -- Processes --
   ---------------
 
-  clock_proc : process(clock, reset)
+  clock_process : process(clock, reset)
   begin
     if reset = '1' then
       use_d_prev_inv    <= '0';
@@ -197,9 +206,9 @@ begin
         error_locator_out <= (OTHERS => '0');
       end if;
     end if;
-  end process clock_proc;
+  end process clock_process;
 
-  comb_proc : process(  d_multiplicand_a_inputs,
+  comb_process : process(  d_multiplicand_a_inputs,
                         d_multiplicand_b_inputs,
                         d_multiplicand_outputs,
                         syndromes,
@@ -216,7 +225,7 @@ begin
     variable var_d        : gf_element;
     variable var_cx_new   : gf_element;
   begin
-    -- set inputs for discrepancy multipliers input a (C(x) coefficients)
+    -- Set inputs for discrepancy multipliers input a (C(x) coefficients)
     d_multiplicand_a_inputs <= (OTHERS => GF_ZERO);
     for i in d_multiplicand_a_inputs'range(1) loop
       if L >= i then
@@ -224,7 +233,7 @@ begin
       end if;
     end loop;
 
-    -- set inputs for discrepancy multipliers input b (syndromes)
+    -- Set inputs for discrepancy multipliers input b (syndromes)
     d_multiplicand_b_inputs <= (OTHERS => GF_ZERO);
     for i in d_multiplicand_b_inputs'range(1) loop
       if L >= i then
@@ -232,7 +241,7 @@ begin
       end if;
     end loop;
 
-    -- set inputs for C(x) adjustment multipliers
+    -- Set inputs for C(x) adjustment multipliers
     cx_adj_inputs <= (OTHERS => GF_ZERO);
     for i in cx_prev'range(1) loop
       if i < cx_prev'high(1)-k then
@@ -258,6 +267,6 @@ begin
       inv_mux <= d_inv;
     end if;
 
-  end process comb_proc;
+  end process comb_process;
 
 end rtl;
