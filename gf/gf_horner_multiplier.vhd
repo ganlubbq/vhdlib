@@ -10,20 +10,30 @@ use work.vhdlib_package.all;
 
 entity gf_horner_multiplier is
   generic (
-    GF_POLYNOMIAL : std_logic_vector  := BINARY_POLYNOMIAL_G709_GF; -- irreducible, binary polynomial
-    SYMBOL_WIDTH  : natural           := 8                          -- size of polynomial coefficients
+    -- Irreducible, binary polynomial.
+    GF_POLYNOMIAL : std_logic_vector := BINARY_POLYNOMIAL_G709_GF;
+
+    -- Size of polynomial coefficients.
+    SYMBOL_WIDTH : natural := 8
   );
   port (
-    coefficient : in  std_logic_vector(SYMBOL_WIDTH-1 downto 0);          -- coefficient of polynomial being evaluated
-    eval_value  : in  std_logic_vector(GF_POLYNOMIAL'length-2 downto 0);  -- value that the polynomial is evaluated over
-    product_in  : in  std_logic_vector(GF_POLYNOMIAL'length-2 downto 0);  -- output from last iteration
-    product_out : out std_logic_vector(GF_POLYNOMIAL'length-2 downto 0)   -- output of this iteration
+    -- Coefficient of the polynomial being evaluated.
+    coefficient : in std_logic_vector(SYMBOL_WIDTH-1 downto 0);
+
+    -- Value that the polynomial is evaluated over.
+    evaluation_value : in std_logic_vector(GF_POLYNOMIAL'length-2 downto 0);
+    
+    -- Output from iteration N-1 fed back into the multiplier.
+    product_in : in std_logic_vector(GF_POLYNOMIAL'length-2 downto 0);
+    
+    -- Output of iteration N.
+    product_out : out std_logic_vector(GF_POLYNOMIAL'length-2 downto 0)
   );
 end entity;
 
 architecture rtl of gf_horner_multiplier is
 
-  constant M                : natural := GF_POLYNOMIAL'length-1;
+  constant M : natural := GF_POLYNOMIAL'length-1;
 
   signal product            : std_logic_vector(M-1 downto 0);
   signal padded_coefficient : std_logic_vector(M-1 downto 0);
@@ -36,7 +46,7 @@ begin
       GF_POLYNOMIAL => GF_POLYNOMIAL
     )
     port map (
-      multiplicand_a  => eval_value,
+      multiplicand_a  => evaluation_value,
       multiplicand_b  => product_in,
       product         => product
     );

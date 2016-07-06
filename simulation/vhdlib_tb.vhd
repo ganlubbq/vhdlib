@@ -120,29 +120,29 @@ end rs_lfsr_encoder_tb;
 -------------------------
 
 architecture gf_horner_evaluator_tb of vhdlib_tb is
-  constant GF_POLYNOMIAL    : std_logic_vector := BINARY_POLYNOMIAL_DECIMAL_19; -- irreducible, binary polynomial
-  constant NO_OF_PAR_EVALS  : natural := 6;
-  constant NO_OF_COEFS      : natural := 3;
-  constant SYMBOL_WIDTH     : natural := 4;
-  constant M                : natural := GF_POLYNOMIAL'length-1;
+  constant GF_POLYNOMIAL              : std_logic_vector := BINARY_POLYNOMIAL_DECIMAL_19; -- irreducible, binary polynomial
+  constant NO_OF_PARALLEL_EVALUATIONS : natural := 6;
+  constant NO_OF_COEFFICIENTS         : natural := 3;
+  constant SYMBOL_WIDTH               : natural := 4;
+  constant M                          : natural := GF_POLYNOMIAL'length-1;
 
   signal clock            : std_logic;
   signal reset            : std_logic;
   signal clock_enable     : std_logic;
   signal new_calculation  : std_logic;
-  signal coefficients     : std_logic_vector(NO_OF_COEFS*SYMBOL_WIDTH-1 downto 0);
-  signal eval_values      : std_logic_vector(NO_OF_PAR_EVALS*M-1 downto 0);
-  signal start_values     : std_logic_vector(NO_OF_PAR_EVALS*M-1 downto 0);
-  signal result_values    : std_logic_vector(NO_OF_PAR_EVALS*M-1 downto 0);
+  signal coefficients     : std_logic_vector(NO_OF_COEFFICIENTS*SYMBOL_WIDTH-1 downto 0);
+  signal eval_values      : std_logic_vector(NO_OF_PARALLEL_EVALUATIONS*M-1 downto 0);
+  signal start_values     : std_logic_vector(NO_OF_PARALLEL_EVALUATIONS*M-1 downto 0);
+  signal result_values    : std_logic_vector(NO_OF_PARALLEL_EVALUATIONS*M-1 downto 0);
 
 begin
 
   dut : entity work.gf_horner_evaluator(rtl)
   generic map (
-                GF_POLYNOMIAL   => GF_POLYNOMIAL,
-                NO_OF_PAR_EVALS => NO_OF_PAR_EVALS,
-                NO_OF_COEFS     => NO_OF_COEFS,
-                SYMBOL_WIDTH    => SYMBOL_WIDTH
+                GF_POLYNOMIAL               => GF_POLYNOMIAL,
+                NO_OF_PARALLEL_EVALUATIONS  => NO_OF_PARALLEL_EVALUATIONS,
+                NO_OF_COEFFICIENTS          => NO_OF_COEFFICIENTS,
+                SYMBOL_WIDTH                => SYMBOL_WIDTH
               )
   port map (
              clock           => clock,
@@ -187,24 +187,24 @@ begin
       read(read_line, new_calculation_stm);
       new_calculation <= new_calculation_stm;
 
-      for i in 0 to NO_OF_COEFS-1 loop
+      for i in 0 to NO_OF_COEFFICIENTS-1 loop
         read(read_line, coefficient_stm);
         coefficients(coefficients'high-i*SYMBOL_WIDTH downto coefficients'length-(i+1)*SYMBOL_WIDTH) <= std_logic_vector(to_unsigned(coefficient_stm,SYMBOL_WIDTH));
       end loop;
 
-      for i in 0 to NO_OF_PAR_EVALS-1 loop
+      for i in 0 to NO_OF_PARALLEL_EVALUATIONS-1 loop
         read(read_line, value_stm);
         eval_values(eval_values'high-i*M downto eval_values'length-(i+1)*M) <= std_logic_vector(to_unsigned(value_stm,M));
       end loop;
 
-      for i in 0 to NO_OF_PAR_EVALS-1 loop
+      for i in 0 to NO_OF_PARALLEL_EVALUATIONS-1 loop
         read(read_line, value_stm);
         start_values(start_values'high-i*M downto start_values'length-(i+1)*M) <= std_logic_vector(to_unsigned(value_stm,M));
       end loop;
 
       wait for 10 ns;
 
-      for i in 0 to NO_OF_PAR_EVALS-1 loop
+      for i in 0 to NO_OF_PARALLEL_EVALUATIONS-1 loop
         read(read_line, value_stm);
         assert result_values(result_values'high-i*M downto result_values'length-(i+1)*M) = std_logic_vector(to_unsigned(value_stm,M))
           report "ERROR!" severity error;
@@ -228,25 +228,25 @@ end gf_horner_evaluator_tb;
 -------------------------
 
 architecture syndrome_calculator_tb of vhdlib_tb is
-  constant GF_POLYNOMIAL    : std_logic_vector := BINARY_POLYNOMIAL_DECIMAL_19; -- irreducible, binary polynomial
-  constant NO_OF_COEFS      : natural := 3;
-  constant NO_OF_SYNDROMES  : natural := 6;
-  constant M                : natural := GF_POLYNOMIAL'length-1;
+  constant GF_POLYNOMIAL      : std_logic_vector := BINARY_POLYNOMIAL_DECIMAL_19; -- irreducible, binary polynomial
+  constant NO_OF_COEFFICIENTS : natural := 3;
+  constant NO_OF_SYNDROMES    : natural := 6;
+  constant M                  : natural := GF_POLYNOMIAL'length-1;
 
   signal clock            : std_logic;
   signal reset            : std_logic;
   signal clock_enable     : std_logic;
   signal new_calculation  : std_logic;
-  signal coefficients     : std_logic_vector(NO_OF_COEFS*M-1 downto 0);
+  signal coefficients     : std_logic_vector(NO_OF_COEFFICIENTS*M-1 downto 0);
   signal syndromes        : std_logic_vector(NO_OF_SYNDROMES*M-1 downto 0);
 
 begin
 
   dut : entity work.syndrome_calculator(rtl)
   generic map (
-    GF_POLYNOMIAL   => GF_POLYNOMIAL,
-    NO_OF_COEFS     => NO_OF_COEFS,
-    NO_OF_SYNDROMES => NO_OF_SYNDROMES
+    GF_POLYNOMIAL       => GF_POLYNOMIAL,
+    NO_OF_COEFFICIENTS  => NO_OF_COEFFICIENTS,
+    NO_OF_SYNDROMES     => NO_OF_SYNDROMES
   )
   port map (
     clock           => clock,
@@ -287,7 +287,7 @@ begin
       read(read_line, new_calculation_stm);
       new_calculation <= new_calculation_stm;
 
-      for i in 0 to NO_OF_COEFS-1 loop
+      for i in 0 to NO_OF_COEFFICIENTS-1 loop
         read(read_line, coefficient_stm);
         coefficients(coefficients'high-i*M downto coefficients'length-(i+1)*M) <= std_logic_vector(to_unsigned(coefficient_stm,M));
       end loop;
@@ -377,14 +377,14 @@ end gf_lookup_table_tb;
 
 architecture gf_horner_multiplier_tb of vhdlib_tb is
 
-  constant GF_POLYNOMIAL : std_logic_vector := BINARY_POLYNOMIAL_DECIMAL_19;
-  constant SYMBOL_WIDTH  : integer          := 4;
-  constant M             : integer          := GF_POLYNOMIAL'length-1;
+  constant GF_POLYNOMIAL  : std_logic_vector := BINARY_POLYNOMIAL_DECIMAL_19;
+  constant SYMBOL_WIDTH   : integer          := 4;
+  constant M              : integer          := GF_POLYNOMIAL'length-1;
 
-  signal coefficient   : std_logic_vector(SYMBOL_WIDTH-1 downto 0);
-  signal eval_value    : std_logic_vector(M-1 downto 0);
-  signal product_in    : std_logic_vector(M-1 downto 0);
-  signal product_out   : std_logic_vector(M-1 downto 0);
+  signal coefficient      : std_logic_vector(SYMBOL_WIDTH-1 downto 0);
+  signal evaluation_value : std_logic_vector(M-1 downto 0);
+  signal product_in       : std_logic_vector(M-1 downto 0);
+  signal product_out      : std_logic_vector(M-1 downto 0);
 
 begin
 
@@ -394,10 +394,10 @@ begin
     SYMBOL_WIDTH  => SYMBOL_WIDTH
   )
   port map (
-    coefficient => coefficient,
-    eval_value  => eval_value,
-    product_in  => product_in,
-    product_out => product_out
+    coefficient       => coefficient,
+    evaluation_value  => evaluation_value,
+    product_in        => product_in,
+    product_out       => product_out
   );
 
   stm_process : process
@@ -414,9 +414,9 @@ begin
       read(read_line, product_in_stm);
       read(read_line, eval_value_stm);
       read(read_line, product_out_stm);
-      coefficient   <= std_logic_vector(to_unsigned(coefficient_stm,SYMBOL_WIDTH));
-      eval_value    <= std_logic_vector(to_unsigned(eval_value_stm,M));
-      product_in    <= std_logic_vector(to_unsigned(product_in_stm,M));
+      coefficient       <= std_logic_vector(to_unsigned(coefficient_stm,SYMBOL_WIDTH));
+      evaluation_value  <= std_logic_vector(to_unsigned(eval_value_stm,M));
+      product_in        <= std_logic_vector(to_unsigned(product_in_stm,M));
       wait for 1 ns;
       assert product_out = std_logic_vector(to_unsigned(product_out_stm,M)) report "ERROR!" severity error;
       wait for 1 ns;
@@ -446,7 +446,7 @@ begin
     )
     port map (
       crc_in  => crc_in,
-      data_in  => data_in,
+      data_in => data_in,
       crc_out => crc_out
     );
 

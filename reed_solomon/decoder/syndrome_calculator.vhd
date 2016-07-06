@@ -9,16 +9,22 @@ use work.vhdlib_package.all;
 
 entity syndrome_calculator is
   generic (
-    GF_POLYNOMIAL   : std_logic_vector  := BINARY_POLYNOMIAL_G709_GF; -- irreducible, binary polynomial
-    NO_OF_COEFS     : natural           := 3;                         -- number of coefficient symbols to process at a time; must divide polynomial degree (i.e. 0 remainder).
-    NO_OF_SYNDROMES : natural           := 6                          -- number of syndromes to calculate
+    -- Irreducible, binary polynomial
+    GF_POLYNOMIAL : std_logic_vector := BINARY_POLYNOMIAL_G709_GF;
+
+    -- Number of coefficient symbols to process at a time. 
+    -- Must divide polynomial degree (i.e. 0 remainder).
+    NO_OF_COEFFICIENTS : natural := 3;
+
+    -- Number of syndromes to calculate.
+    NO_OF_SYNDROMES : natural := 6
   );
   port (
     clock           : in  std_logic;
     reset           : in  std_logic;
     clock_enable    : in  std_logic;
     new_calculation : in  std_logic;
-    coefficients    : in  std_logic_vector(NO_OF_COEFS*(GF_POLYNOMIAL'length-1)-1 downto 0);      -- polynomial coefficients; highest order symbol on MSBs, descending
+    coefficients    : in  std_logic_vector(NO_OF_COEFFICIENTS*(GF_POLYNOMIAL'length-1)-1 downto 0);      -- polynomial coefficients; highest order symbol on MSBs, descending
     syndromes       : out std_logic_vector(NO_OF_SYNDROMES*(GF_POLYNOMIAL'length-1)-1 downto 0)
   );
 end entity;
@@ -47,10 +53,10 @@ begin
 
   gf_horner_evaluator : entity work.gf_horner_evaluator(rtl)
     generic map (
-      GF_POLYNOMIAL   => GF_POLYNOMIAL,
-      NO_OF_PAR_EVALS => NO_OF_SYNDROMES,
-      NO_OF_COEFS     => NO_OF_COEFS,
-      SYMBOL_WIDTH    => M
+      GF_POLYNOMIAL               => GF_POLYNOMIAL,
+      NO_OF_PARALLEL_EVALUATIONS  => NO_OF_SYNDROMES,
+      NO_OF_COEFFICIENTS          => NO_OF_COEFFICIENTS,
+      SYMBOL_WIDTH                => M
     )
     port map (
       clock           => clock,
