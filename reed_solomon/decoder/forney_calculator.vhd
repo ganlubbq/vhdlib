@@ -129,9 +129,12 @@ begin
       new_numerator_calculation <= '0';
       error_values <= (OTHERS => '0');
 
+      -- >>>>>>>>>>>>>>
       -- shift error_evaluator_registers registers
       error_evaluator_registers <= (OTHERS => '0');
       error_evaluator_registers(error_evaluator_registers'high(1) downto M*NO_OF_COEFFICIENTS) <= error_evaluator_registers(error_evaluator_registers'high(1)-M*NO_OF_COEFFICIENTS downto 0); -- shift left
+--       error_evaluator_registers(error_evaluator_registers'high(1)-M*NO_OF_COEFFICIENTS downto 0) <= error_evaluator_registers(error_evaluator_registers'high(1) downto M*NO_OF_COEFFICIENTS); -- shift right
+      -- <<<<<<<<<<<<<<
 
       if state = CALCULATING then
 
@@ -154,7 +157,15 @@ begin
       -- if new input is given then reset calculation
       if new_calculation = '1' then
         -- read in new data; start calculation
-        error_evaluator_registers <= error_evaluator;
+        -- >>>>>>>>>>>>>>
+        -- No reversing
+--         error_evaluator_registers <= error_evaluator;
+
+        -- Reverse error evaluator polynomial 
+        for i in 0 to 2*NO_OF_CORRECTABLE_ERRORS-1 loop
+          error_evaluator_registers((2*NO_OF_CORRECTABLE_ERRORS-i)*M-1 downto (2*NO_OF_CORRECTABLE_ERRORS-i-1)*M) <= error_evaluator((i+1)*M-1 downto i*M);
+        end loop;
+        -- <<<<<<<<<<<<<<
         error_roots_registers <= error_roots;
 
         error_values_registers <= (OTHERS => GF_ZERO);
@@ -180,7 +191,10 @@ begin
     end if;
   end process clock_process;
 
+  -- >>>>>>>>>>>>>>
   -- drive input coefficients signal to gf_horner_evaluator
   error_eval_coefficients <= error_evaluator_registers(error_evaluator_registers'high(1) downto error_evaluator_registers'length(1)-M*NO_OF_COEFFICIENTS); -- coefficients in MSBs
+--   error_eval_coefficients <= error_evaluator_registers(M*NO_OF_COEFFICIENTS-1 downto 0); -- coefficients in LSBs
+  -- <<<<<<<<<<<<<<
 
 end rtl;
