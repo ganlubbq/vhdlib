@@ -141,12 +141,10 @@ begin
       cx                  <= (0 => GF_ONE, OTHERS => GF_ZERO);
       cx_prev             <= (0 => GF_ONE, OTHERS => GF_ZERO);
       syndromes_registers <= (OTHERS => GF_ZERO);
-
-      state  <= IDLE;
-      ready             <= '0';
-      error_locator   <= (OTHERS => '0');
+      state               <= IDLE;
+      ready               <= '0';
+      error_locator       <= (OTHERS => '0');
     elsif rising_edge(clock) then
-
       ready           <= '0';
       use_d_prev_inv  <= '1';
 

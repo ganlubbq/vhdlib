@@ -725,96 +725,98 @@ end error_value_evaluator_tb;
 -- forney_calculator --
 -----------------------
 
--- architecture forney_calculator_tb of vhdlib_tb is
---   constant GF_POLYNOMIAL    : std_logic_vector := BINARY_POLYNOMIAL_DECIMAL_19; -- irreducible, binary polynomial
---   constant NO_OF_CORRECTABLE_ERRORS  : integer := 3;
---   constant NO_OF_SYNDROMES  : integer := 2*NO_OF_CORRECTABLE_ERRORS;
---   constant M                : integer := GF_POLYNOMIAL'length-1;
--- 
---   signal clock              : std_logic;
---   signal reset              : std_logic;
---   signal new_calculation         : std_logic;
---   signal error_roots_in     : std_logic_vector(NO_OF_CORRECTABLE_ERRORS*M-1 downto 0);
---   signal error_eval_in      : std_logic_vector(NO_OF_SYNDROMES*M-1 downto 0);
---   signal error_values_out   : std_logic_vector(NO_OF_CORRECTABLE_ERRORS*M-1 downto 0);
---   signal ready            : std_logic;
--- 
--- begin
--- 
---   dut : entity work.forney_calculator(rtl)
---   generic map (
---     GF_POLYNOMIAL   => GF_POLYNOMIAL,
---     NO_OF_CORRECTABLE_ERRORS => NO_OF_CORRECTABLE_ERRORS
---   )
---   port map (
---     clock             => clock,
---     reset             => reset,
---     new_calculation        => new_calculation,
---     error_roots_in    => error_roots_in,
---     error_eval_in     => error_eval_in,
---     error_values_out  => error_values_out,
---     ready           => ready
---   );
--- 
---   clock_process : process
---   begin
---     clock <= '0';
---     wait for 5 ns;
---     clock <= '1';
---     wait for 5 ns;
---   end process clock_process;
--- 
---   stm_process : process
---     variable read_line       : line;
---     variable gf_element_stm  : integer;
---     file stimuli_file      : text open read_mode is "t_forney_calculator.txt";
---   begin
--- 
---     new_calculation      <= '0';
---     error_roots_in  <= (OTHERS => '0');
---     error_eval_in   <= (OTHERS => '0');
--- 
---     reset <= '1';
---     wait for 6 ns;
---     reset <= '0';
--- 
---     while not endfile(stimuli_file) loop
---       readline(stimuli_file, read_line);
---       new_calculation <= '1';
--- 
---       for i in 0 to NO_OF_CORRECTABLE_ERRORS-1 loop
---         read(read_line, gf_element_stm);
---         error_roots_in(error_roots_in'high-i*M downto error_roots_in'length-(i+1)*M) <= std_logic_vector(to_unsigned(gf_element_stm,M));
---       end loop;
--- 
+architecture forney_calculator_tb of vhdlib_tb is
+  constant GF_POLYNOMIAL            : std_logic_vector := BINARY_POLYNOMIAL_DECIMAL_19; -- irreducible, binary polynomial
+  constant NO_OF_CORRECTABLE_ERRORS : integer := 3;
+  constant NO_OF_SYNDROMES          : integer := 2*NO_OF_CORRECTABLE_ERRORS;
+  constant M                        : integer := GF_POLYNOMIAL'length-1;
+
+  signal clock            : std_logic;
+  signal reset            : std_logic;
+  signal new_calculation  : std_logic;
+  signal error_roots      : std_logic_vector(NO_OF_CORRECTABLE_ERRORS*M-1 downto 0);
+  signal error_locations  : std_logic_vector(NO_OF_CORRECTABLE_ERRORS*M-1 downto 0);
+  signal error_evaluator  : std_logic_vector(NO_OF_SYNDROMES*M-1 downto 0);
+  signal error_values     : std_logic_vector(NO_OF_CORRECTABLE_ERRORS*M-1 downto 0);
+  signal ready            : std_logic;
+
+begin
+
+  dut : entity work.forney_calculator(rtl)
+  generic map (
+    GF_POLYNOMIAL             => GF_POLYNOMIAL,
+    NO_OF_CORRECTABLE_ERRORS  => NO_OF_CORRECTABLE_ERRORS
+  )
+  port map (
+    clock           => clock,
+    reset           => reset,
+    new_calculation => new_calculation,
+    error_roots     => error_roots,
+    error_locations => error_locations,
+    error_evaluator => error_evaluator,
+    error_values    => error_values,
+    ready           => ready
+  );
+
+  clock_process : process
+  begin
+    clock <= '0';
+    wait for 5 ns;
+    clock <= '1';
+    wait for 5 ns;
+  end process clock_process;
+
+  stm_process : process
+    variable read_line      : line;
+    variable gf_element_stm : integer;
+    file stimuli_file       : text open read_mode is "t_forney_calculator.txt";
+  begin
+
+    new_calculation      <= '0';
+    error_roots  <= (OTHERS => '0');
+    error_evaluator   <= (OTHERS => '0');
+
+    reset <= '1';
+    wait for 6 ns;
+    reset <= '0';
+
+    while not endfile(stimuli_file) loop
+      readline(stimuli_file, read_line);
+      new_calculation <= '1';
+
+      for i in 0 to NO_OF_CORRECTABLE_ERRORS-1 loop
+        read(read_line, gf_element_stm);
+        error_roots(error_roots'high-i*M downto error_roots'length-(i+1)*M) <= std_logic_vector(to_unsigned(gf_element_stm,M));
+      end loop;
+
+      for i in 0 to NO_OF_SYNDROMES-1 loop
+        read(read_line, gf_element_stm);
+        error_evaluator(error_evaluator'high-i*M downto error_evaluator'length-(i+1)*M) <= std_logic_vector(to_unsigned(gf_element_stm,M));
+      end loop;
+
+      wait for 10 ns;
+
+      new_calculation  <= '0';
+
+      wait until ready = '1';
+
+      wait for 10 ns;
+
 --       for i in 0 to NO_OF_SYNDROMES-1 loop
 --         read(read_line, gf_element_stm);
---         error_eval_in(error_eval_in'high-i*M downto error_eval_in'length-(i+1)*M) <= std_logic_vector(to_unsigned(gf_element_stm,M));
+--         assert error_values(error_values'high-i*M downto error_values'length-(i+1)*M) = std_logic_vector(to_unsigned(gf_element_stm,M))
+--           report "ERROR!" severity error;
 --       end loop;
--- 
---       wait for 10 ns;
--- 
---       new_calculation  <= '0';
--- 
---       wait until ready = '1';
--- 
---       wait for 10 ns;
--- 
--- --       for i in 0 to NO_OF_SYNDROMES-1 loop
--- --         read(read_line, gf_element_stm);
--- --         assert error_values_out(error_values_out'high-i*M downto error_values_out'length-(i+1)*M) = std_logic_vector(to_unsigned(gf_element_stm,M))
--- --           report "ERROR!" severity error;
--- --       end loop;
--- 
---     end loop;
--- 
---     error_roots_in  <= (OTHERS => '0');
---     error_eval_in   <= (OTHERS => '0');
---     report "HAS ENDED!";
---     wait;
---   end process stm_process;
--- 
--- end forney_calculator_tb;
+
+    end loop;
+
+    error_roots  <= (OTHERS => '0');
+    error_evaluator   <= (OTHERS => '0');
+    report "HAS ENDED!";
+    wait;
+  end process stm_process;
+
+end forney_calculator_tb;
 
 ------------------
 -- chien_search --
