@@ -51,19 +51,18 @@ for n=0:2*t-1
 end
 
 % find error locations (Chien search)
-er = gf([],a.m,a.prim_poly); % error-locator polynomial roots
-el = gf([],a.m,a.prim_poly); % error locations
-ei = gf([],a.m,a.prim_poly); % error symbol locations
+error_locator_roots = gf([],a.m,a.prim_poly); % error-locator polynomial roots
+error_locations = gf([],a.m,a.prim_poly); % error locations
+symbol_locations = gf([],a.m,a.prim_poly); % error symbol locations
 for i=0:2^a.m-2
     x = gf(0,a.m,a.prim_poly);
-    ai = a^i;
     for k=length(cx):-1:1
-        x = x + cx(k)*ai^(length(cx)-k);
+        x = x + cx(k)*(a^i)^(length(cx)-k);
     end
     if x==0
-        ei = [ei i];
-        er = [er a^i];
-        el = [el inv(a^i)];
+        error_locator_roots = [error_locator_roots a^i];
+        error_locations = [error_locations inv(a^i)];
+        symbol_locations = [symbol_locations i];
     end
 end
 
@@ -76,42 +75,39 @@ for i=1:length(cx)
     end
 end
 
-% find error-value evaluator
-z0 = gf(zeros(1,lcx),a.m,a.prim_poly);
+% calculate error evaluator polynomial
+error_evaluator = gf(zeros(1,lcx),a.m,a.prim_poly);
 for i=1:lcx
     tmps = gf(s(lcx+1-i:-1:1),a.m,a.prim_poly);
- 
     tmpc = gf(cx(length(cx):-1:length(cx)-lcx+i),a.m,a.prim_poly);
-
     tmp = tmps.*tmpc;
 
     for k=1:length(tmp)
-%         z0(length(z0)+1-i) = z0(length(z0)+1-i) + tmp(k);
-        z0(i) = z0(i) + tmp(k);
+        error_evaluator(length(error_evaluator)+1-i) = error_evaluator(length(error_evaluator)+1-i) + tmp(k);
     end
 end
 
 % Forney's algorithm
+% evaluate error evaluator at error locator roots
 
-% evaluate Z_0 at error-locator roots (numerator)
-z0eval = gf(zeros(size(z0)),a.m,a.prim_poly);
+% Calculate numerators
+eval_numerators = gf(zeros(size(error_evaluator)),a.m,a.prim_poly);
 for i=1:length(er)
-    ex = er(i);
-    eix = ei(i);
-    for k=1:length(z0)
-        zx = z0(k);
-%         z0eval(i) = z0eval(i) + er(i)^(k-1)*z0(k);
-        z0eval(i) = z0eval(i) + er(i)^(k-1)*z0(length(z0)+1-k);
+    for k=1:length(error_evaluator)
+        eval_numerators(i) = eval_numerators(i) + error_evaluator(k)*error_locator_roots(i)^(k-1);
     end
+    en = eval_numerators(i);
+    fprintf('Numerator %i: %i\n',i,en.x);
 end
 
-% denominator
-cxdeval = gf(zeros(size(er)),a.m,a.prim_poly);
-for i=1:length(er)
-    cxdeval(i) = el(i);
-    for k=1:length(el)
+% Calculate denominators
+eval_denominators = gf(zeros(size(error_locator_roots)),a.m,a.prim_poly);
+for i=1:length(error_locator_roots)
+    eval_denominators(i) = error_locations(i);
+    one = gf(1,a.m,a.prim_poly);
+    for k=1:length(error_locations)
         if k ~= i
-            cxdeval(i) = cxdeval(i) * (gf(1,a.m,a.prim_poly) + el(k)*er(i));
+            eval_denominators(i) = eval_denominators(i) * (one + error_locations(k)*error_locator_roots(i));
         end
     end
 end
@@ -119,10 +115,10 @@ end
 % divide to get error values
 ev = gf(zeros(size(el)),a.m,a.prim_poly);
 for i=1:length(el)
-    ev(i) = z0eval(i)*inv(cxdeval(i));
+    ev(i) = eval_numerators(i)*inv(eval_denominators(i));
 end
 
-z0evalx = z0eval.x;
+z0evalx = eval_numerator.x;
 z0x = z0.x;
 eix = ei.x;
 erx = er.x;
