@@ -92,7 +92,7 @@ end
 
 % Calculate numerators
 eval_numerators = gf(zeros(size(error_evaluator)),a.m,a.prim_poly);
-for i=1:length(er)
+for i=1:length(error_locator_roots)
     for k=1:length(error_evaluator)
         eval_numerators(i) = eval_numerators(i) + error_evaluator(k)*error_locator_roots(i)^(k-1);
     end
@@ -113,15 +113,15 @@ for i=1:length(error_locator_roots)
 end
 
 % divide to get error values
-ev = gf(zeros(size(el)),a.m,a.prim_poly);
-for i=1:length(el)
+ev = gf(zeros(size(error_locations)),a.m,a.prim_poly);
+for i=1:length(error_locations)
     ev(i) = eval_numerators(i)*inv(eval_denominators(i));
 end
 
-z0evalx = eval_numerator.x;
-z0x = z0.x;
-eix = ei.x;
-erx = er.x;
+z0evalx = eval_numerators.x;
+z0x = error_evaluator.x;
+eix = symbol_locations.x;
+erx = error_locator_roots.x;
 
 fprintf(file,'%i ',[erx zeros(1,length(cx)-lcx) z0x]);
 fprintf(file,'\n');
