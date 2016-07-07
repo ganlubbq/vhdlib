@@ -4,13 +4,13 @@ quietly WaveActivateNextPane {} 0
 add wave -noupdate /vhdlib_tb/dut/clock
 add wave -noupdate /vhdlib_tb/dut/reset
 add wave -noupdate /vhdlib_tb/dut/new_calculation
-add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/error_locator_in
+add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/error_locator
 add wave -noupdate /vhdlib_tb/dut/ready
-add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/error_roots_out
-add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/error_locations_out
+add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/error_roots
+add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/error_locations
 add wave -noupdate -radix unsigned /vhdlib_tb/dut/gammas
 add wave -noupdate -radix unsigned /vhdlib_tb/dut/gammas_new
-add wave -noupdate -radix unsigned /vhdlib_tb/dut/gammas_sum
+add wave -noupdate -radix unsigned /vhdlib_tb/dut/sum_of_gammas
 add wave -noupdate /vhdlib_tb/dut/calculator_state
 add wave -noupdate -radix unsigned /vhdlib_tb/dut/i
 add wave -noupdate /vhdlib_tb/dut/k
@@ -18,8 +18,8 @@ add wave -noupdate -radix unsigned /vhdlib_tb/dut/gf_element_exp_in
 add wave -noupdate -radix unsigned /vhdlib_tb/dut/gf_element_inv_in
 add wave -noupdate -radix unsigned /vhdlib_tb/dut/gf_element_exp_out
 add wave -noupdate -radix unsigned /vhdlib_tb/dut/gf_element_inv_out
-add wave -noupdate -radix unsigned /vhdlib_tb/dut/error_roots
-add wave -noupdate -radix unsigned /vhdlib_tb/dut/error_locations
+add wave -noupdate -radix unsigned /vhdlib_tb/dut/error_roots_registers
+add wave -noupdate -radix unsigned /vhdlib_tb/dut/error_locations_registers
 add wave -noupdate -radix unsigned /vhdlib_tb/dut/error_symbol_locations
 add wave -noupdate /vhdlib_tb/dut/root_found
 
