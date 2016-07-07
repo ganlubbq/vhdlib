@@ -4,16 +4,16 @@ quietly WaveActivateNextPane {} 0
 add wave -noupdate /vhdlib_tb/dut/clock
 add wave -noupdate /vhdlib_tb/dut/reset
 add wave -noupdate /vhdlib_tb/dut/new_calculation
-add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/syndromes_in
-add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/error_locator_in
+add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/syndromes
+add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/error_locator
 add wave -noupdate /vhdlib_tb/dut/ready
-add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/error_eval_out
+add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/error_evaluator
 add wave -noupdate -radix unsigned /vhdlib_tb/dut/syndromes
-add wave -noupdate -radix unsigned /vhdlib_tb/dut/error_locator
-add wave -noupdate -radix unsigned /vhdlib_tb/dut/error_eval
-add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/mul_outputs
-add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/error_eval_coef
-add wave -noupdate /vhdlib_tb/dut/calculator_state
+add wave -noupdate -radix unsigned /vhdlib_tb/dut/error_locator_registers
+add wave -noupdate -radix unsigned /vhdlib_tb/dut/error_evaluator_registers
+add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/multiplier_outputs
+add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/error_evaluator_coefficient
+add wave -noupdate /vhdlib_tb/dut/state
 add wave -noupdate /vhdlib_tb/dut/n
 
 TreeUpdate [SetDefaultTree]

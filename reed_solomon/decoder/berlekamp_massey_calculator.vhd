@@ -14,29 +14,29 @@ entity berlekamp_massey_calculator is
     NO_OF_SYNDROMES : natural           := 6
   );
   port (
-    clock             : in  std_logic;
-    reset             : in  std_logic;
+    clock           : in  std_logic;
+    reset           : in  std_logic;
 
     -- When '1' a new calculation is started with the given syndromes.
-    new_calculation   : in  std_logic;
+    new_calculation : in  std_logic;
 
     -- Lowest order syndrome at MSBs, ascending.
-    syndromes_in      : in  std_logic_vector(NO_OF_SYNDROMES*(GF_POLYNOMIAL'length-1)-1 downto 0);
+    syndromes       : in  std_logic_vector(NO_OF_SYNDROMES*(GF_POLYNOMIAL'length-1)-1 downto 0);
     
     -- When '1' the calculated error-locator polynomial is ready.
-    ready             : out std_logic;
+    ready           : out std_logic;
    
-    -- Error-locator polyonomial. Highest order coefficient at MSBs, descending.
-    error_locator_out : out std_logic_vector(NO_OF_SYNDROMES*(GF_POLYNOMIAL'length-1)-1 downto 0)
+    -- Error locator polyonomial. Highest order coefficient at MSBs, descending.
+    error_locator   : out std_logic_vector(NO_OF_SYNDROMES*(GF_POLYNOMIAL'length-1)-1 downto 0)
   );
 end entity;
 
 architecture rtl of berlekamp_massey_calculator is
-  constant M              : natural := GF_POLYNOMIAL'length-1;
+  constant M : natural := GF_POLYNOMIAL'length-1;
 
-  subtype gf_element      is std_logic_vector(M-1 downto 0);
-  type gf_array_desc_t    is array(NO_OF_SYNDROMES-1 downto 0) of gf_element;
-  type calculator_state_t is (IDLE, CALCULATING);
+  subtype gf_element is std_logic_vector(M-1 downto 0);
+  type gf_array_desc_t is array(NO_OF_SYNDROMES-1 downto 0) of gf_element;
+  type calculator_state is (IDLE, CALCULATING);
 
   constant GF_ZERO  : gf_element := (OTHERS => '0');
   constant GF_ONE   : gf_element := (0 => '1', OTHERS => '0');
@@ -59,8 +59,8 @@ architecture rtl of berlekamp_massey_calculator is
   signal cx_adj_inputs            : gf_array_desc_t;
   signal cx_adj_outputs           : gf_array_desc_t;
   signal cx_prev                  : gf_array_desc_t;
-  signal syndromes                : gf_array_desc_t;
-  signal calculator_state         : calculator_state_t;
+  signal syndromes_registers      : gf_array_desc_t;
+  signal state                    : calculator_state;
 
 begin
 
@@ -133,28 +133,26 @@ begin
   clock_process : process(clock, reset)
   begin
     if reset = '1' then
-      use_d_prev_inv    <= '0';
-      L                 <= 0;
-      n                 <= 0;
-      k                 <= 1;
-      d_prev            <= GF_ONE;
-      cx                <= (0 => GF_ONE, OTHERS => GF_ZERO);
-      cx_prev           <= (0 => GF_ONE, OTHERS => GF_ZERO);
-      syndromes         <= (OTHERS => GF_ZERO);
-
-      calculator_state  <= IDLE;
-      ready             <= '0';
-      error_locator_out   <= (OTHERS => '0');
+      use_d_prev_inv      <= '0';
+      L                   <= 0;
+      n                   <= 0;
+      k                   <= 1;
+      d_prev              <= GF_ONE;
+      cx                  <= (0 => GF_ONE, OTHERS => GF_ZERO);
+      cx_prev             <= (0 => GF_ONE, OTHERS => GF_ZERO);
+      syndromes_registers <= (OTHERS => GF_ZERO);
+      state               <= IDLE;
+      ready               <= '0';
+      error_locator       <= (OTHERS => '0');
     elsif rising_edge(clock) then
-
       ready           <= '0';
       use_d_prev_inv  <= '1';
 
-      if calculator_state = CALCULATING then
-        -- increment iterator and cycle syndromes 1 to the left
+      if state = CALCULATING then
+        -- increment iterator and cycle syndromes_registers 1 to the left
         n             <= n + 1;
-        syndromes(0)  <= syndromes(syndromes'high(1));
-        syndromes(syndromes'high(1) downto 1) <= syndromes(syndromes'high(1)-1 downto 0);
+        syndromes_registers(0) <= syndromes_registers(syndromes_registers'high(1));
+        syndromes_registers(syndromes_registers'high(1) downto 1) <= syndromes_registers(syndromes_registers'high(1)-1 downto 0);
 
         -- evaluate newly calculated discrepancy
         if d = GF_ZERO then
@@ -173,7 +171,7 @@ begin
 
         -- check if iteration is over
         if n = NO_OF_SYNDROMES-1 then
-          calculator_state  <= IDLE;
+          state  <= IDLE;
         end if;
       end if;
 
@@ -187,39 +185,39 @@ begin
         cx_prev <= (0 => GF_ONE, OTHERS => GF_ZERO);
 
         -- read in syndromes so they are ascending but shifted 1 to the left
-        for i in syndromes'high(1) downto 1 loop
-          syndromes(i)    <= syndromes_in(i*M-1 downto (i-1)*M);
+        for i in syndromes_registers'high(1) downto 1 loop
+          syndromes_registers(i) <= syndromes(i*M-1 downto (i-1)*M);
         end loop;
-        syndromes(0)      <= syndromes_in(syndromes_in'high downto syndromes_in'length-M);
+        syndromes_registers(0) <= syndromes(syndromes'high downto syndromes'length-M);
 
-        calculator_state  <= CALCULATING;
+        state  <= CALCULATING;
       end if;
 
       -- set output and ready when calculation is over
-      if calculator_state = IDLE then
+      if state = IDLE then
         ready           <= '1';
         for i in cx'range(1) loop
-          error_locator_out((i+1)*M-1 downto i*M)  <= cx(i);
+          error_locator((i+1)*M-1 downto i*M)  <= cx(i);
         end loop;
       else
-        error_locator_out <= (OTHERS => '0');
+        error_locator <= (OTHERS => '0');
       end if;
     end if;
   end process clock_process;
 
-  comb_process : process(  d_multiplicand_a_inputs,
-                        d_multiplicand_b_inputs,
-                        d_multiplicand_outputs,
-                        syndromes,
-                        L,
-                        k,
-                        cx_prev,
-                        cx,
-                        cx_adj_inputs,
-                        cx_adj_outputs,
-                        use_d_prev_inv,
-                        d_prev_inv,
-                        d_inv
+  combinational_process : process(  d_multiplicand_a_inputs,
+                                    d_multiplicand_b_inputs,
+                                    d_multiplicand_outputs,
+                                    syndromes_registers,
+                                    L,
+                                    k,
+                                    cx_prev,
+                                    cx,
+                                    cx_adj_inputs,
+                                    cx_adj_outputs,
+                                    use_d_prev_inv,
+                                    d_prev_inv,
+                                    d_inv
                       )
     variable var_d        : gf_element;
     variable var_cx_new   : gf_element;
@@ -236,7 +234,7 @@ begin
     d_multiplicand_b_inputs <= (OTHERS => GF_ZERO);
     for i in d_multiplicand_b_inputs'range(1) loop
       if L >= i then
-        d_multiplicand_b_inputs(i) <= syndromes(i);
+        d_multiplicand_b_inputs(i) <= syndromes_registers(i);
       end if;
     end loop;
 
@@ -266,6 +264,6 @@ begin
       inv_mux <= d_inv;
     end if;
 
-  end process comb_process;
+  end process combinational_process;
 
 end rtl;

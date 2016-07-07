@@ -549,12 +549,12 @@ architecture berlekamp_massey_calculator_tb of vhdlib_tb is
   constant NO_OF_SYNDROMES          : integer := 2*NO_OF_CORRECTABLE_ERRORS;
   constant M                        : integer := GF_POLYNOMIAL'length-1;
 
-  signal clock              : std_logic;
-  signal reset              : std_logic;
-  signal new_calculation         : std_logic;
-  signal syndromes_in     : std_logic_vector(NO_OF_SYNDROMES*M-1 downto 0);
+  signal clock            : std_logic;
+  signal reset            : std_logic;
+  signal new_calculation  : std_logic;
+  signal syndromes        : std_logic_vector(NO_OF_SYNDROMES*M-1 downto 0);
   signal ready            : std_logic;
-  signal error_locator_out  : std_logic_vector(NO_OF_SYNDROMES*M-1 downto 0);
+  signal error_locator    : std_logic_vector(NO_OF_SYNDROMES*M-1 downto 0);
 
 begin
 
@@ -564,12 +564,12 @@ begin
     NO_OF_SYNDROMES => NO_OF_SYNDROMES
   )
   port map (
-    clock             => clock,
-    reset             => reset,
-    new_calculation        => new_calculation,
-    syndromes_in    => syndromes_in,
+    clock           => clock,
+    reset           => reset,
+    new_calculation => new_calculation,
+    syndromes       => syndromes,
     ready           => ready,
-    error_locator_out => error_locator_out
+    error_locator   => error_locator
   );
 
   clock_process : process
@@ -587,7 +587,7 @@ begin
   begin
 
     new_calculation      <= '0';
-    syndromes_in  <= (OTHERS => '0');
+    syndromes  <= (OTHERS => '0');
 
     reset <= '1';
     wait for 6 ns;
@@ -599,7 +599,7 @@ begin
 
       for i in 0 to NO_OF_SYNDROMES-1 loop
         read(read_line, gf_element_stm);
-        syndromes_in(syndromes_in'high-i*M downto syndromes_in'length-(i+1)*M) <= std_logic_vector(to_unsigned(gf_element_stm,M));
+        syndromes(syndromes'high-i*M downto syndromes'length-(i+1)*M) <= std_logic_vector(to_unsigned(gf_element_stm,M));
       end loop;
 
       wait for 10 ns;
@@ -612,13 +612,13 @@ begin
 
       for i in 0 to NO_OF_SYNDROMES-1 loop
         read(read_line, gf_element_stm);
-        assert error_locator_out(error_locator_out'high-i*M downto error_locator_out'length-(i+1)*M) = std_logic_vector(to_unsigned(gf_element_stm,M))
+        assert error_locator(error_locator'high-i*M downto error_locator'length-(i+1)*M) = std_logic_vector(to_unsigned(gf_element_stm,M))
           report "ERROR!" severity error;
       end loop;
 
     end loop;
 
-    syndromes_in  <= (OTHERS => '0');
+    syndromes  <= (OTHERS => '0');
     report "HAS ENDED!";
     wait;
   end process stm_process;
@@ -636,13 +636,13 @@ architecture error_value_evaluator_tb of vhdlib_tb is
   constant NO_OF_SYNDROMES          : integer := 2*NO_OF_CORRECTABLE_ERRORS;
   constant M                        : integer := GF_POLYNOMIAL'length-1;
 
-  signal clock              : std_logic;
-  signal reset              : std_logic;
-  signal new_calculation         : std_logic;
-  signal syndromes_in     : std_logic_vector(NO_OF_SYNDROMES*M-1 downto 0);
-  signal error_locator_in   : std_logic_vector(NO_OF_SYNDROMES*M-1 downto 0);
+  signal clock            : std_logic;
+  signal reset            : std_logic;
+  signal new_calculation  : std_logic;
+  signal syndromes        : std_logic_vector(NO_OF_SYNDROMES*M-1 downto 0);
+  signal error_locator    : std_logic_vector(NO_OF_SYNDROMES*M-1 downto 0);
+  signal error_evaluator  : std_logic_vector(NO_OF_SYNDROMES*M-1 downto 0);
   signal ready            : std_logic;
-  signal error_eval_out     : std_logic_vector(NO_OF_SYNDROMES*M-1 downto 0);
 
 begin
 
@@ -652,12 +652,12 @@ begin
     NO_OF_SYNDROMES => NO_OF_SYNDROMES
   )
   port map (
-    clock             => clock,
-    reset             => reset,
-    new_calculation        => new_calculation,
-    syndromes_in    => syndromes_in,
-    error_locator_in  => error_locator_in,
-    error_eval_out    => error_eval_out,
+    clock           => clock,
+    reset           => reset,
+    new_calculation => new_calculation,
+    syndromes       => syndromes,
+    error_locator   => error_locator,
+    error_evaluator => error_evaluator,
     ready           => ready
   );
 
@@ -675,9 +675,9 @@ begin
     file stimuli_file      : text open read_mode is "t_error_value_evaluator.txt";
   begin
 
-    new_calculation        <= '0';
-    syndromes_in    <= (OTHERS => '0');
-    error_locator_in  <= (OTHERS => '0');
+    new_calculation <= '0';
+    syndromes       <= (OTHERS => '0');
+    error_locator   <= (OTHERS => '0');
 
     reset <= '1';
     wait for 6 ns;
@@ -689,12 +689,12 @@ begin
 
       for i in 0 to NO_OF_SYNDROMES-1 loop
         read(read_line, gf_element_stm);
-        syndromes_in(syndromes_in'high-i*M downto syndromes_in'length-(i+1)*M) <= std_logic_vector(to_unsigned(gf_element_stm,M));
+        syndromes(syndromes'high-i*M downto syndromes'length-(i+1)*M) <= std_logic_vector(to_unsigned(gf_element_stm,M));
       end loop;
 
       for i in 0 to NO_OF_SYNDROMES-1 loop
         read(read_line, gf_element_stm);
-        error_locator_in(error_locator_in'high-i*M downto error_locator_in'length-(i+1)*M) <= std_logic_vector(to_unsigned(gf_element_stm,M));
+        error_locator(error_locator'high-i*M downto error_locator'length-(i+1)*M) <= std_logic_vector(to_unsigned(gf_element_stm,M));
       end loop;
 
       wait for 10 ns;
@@ -707,14 +707,14 @@ begin
 
       for i in 0 to NO_OF_SYNDROMES-1 loop
         read(read_line, gf_element_stm);
-        assert error_eval_out(error_eval_out'high-i*M downto error_eval_out'length-(i+1)*M) = std_logic_vector(to_unsigned(gf_element_stm,M))
+        assert error_evaluator(error_evaluator'high-i*M downto error_evaluator'length-(i+1)*M) = std_logic_vector(to_unsigned(gf_element_stm,M))
           report "ERROR!" severity error;
       end loop;
 
     end loop;
 
-    syndromes_in    <= (OTHERS => '0');
-    error_locator_in  <= (OTHERS => '0');
+    syndromes <= (OTHERS => '0');
+    error_locator <= (OTHERS => '0');
     report "HAS ENDED!";
     wait;
   end process stm_process;
@@ -725,96 +725,98 @@ end error_value_evaluator_tb;
 -- forney_calculator --
 -----------------------
 
--- architecture forney_calculator_tb of vhdlib_tb is
---   constant GF_POLYNOMIAL    : std_logic_vector := BINARY_POLYNOMIAL_DECIMAL_19; -- irreducible, binary polynomial
---   constant NO_OF_CORRECTABLE_ERRORS  : integer := 3;
---   constant NO_OF_SYNDROMES  : integer := 2*NO_OF_CORRECTABLE_ERRORS;
---   constant M                : integer := GF_POLYNOMIAL'length-1;
--- 
---   signal clock              : std_logic;
---   signal reset              : std_logic;
---   signal new_calculation         : std_logic;
---   signal error_roots_in     : std_logic_vector(NO_OF_CORRECTABLE_ERRORS*M-1 downto 0);
---   signal error_eval_in      : std_logic_vector(NO_OF_SYNDROMES*M-1 downto 0);
---   signal error_values_out   : std_logic_vector(NO_OF_CORRECTABLE_ERRORS*M-1 downto 0);
---   signal ready            : std_logic;
--- 
--- begin
--- 
---   dut : entity work.forney_calculator(rtl)
---   generic map (
---     GF_POLYNOMIAL   => GF_POLYNOMIAL,
---     NO_OF_CORRECTABLE_ERRORS => NO_OF_CORRECTABLE_ERRORS
---   )
---   port map (
---     clock             => clock,
---     reset             => reset,
---     new_calculation        => new_calculation,
---     error_roots_in    => error_roots_in,
---     error_eval_in     => error_eval_in,
---     error_values_out  => error_values_out,
---     ready           => ready
---   );
--- 
---   clock_process : process
---   begin
---     clock <= '0';
---     wait for 5 ns;
---     clock <= '1';
---     wait for 5 ns;
---   end process clock_process;
--- 
---   stm_process : process
---     variable read_line       : line;
---     variable gf_element_stm  : integer;
---     file stimuli_file      : text open read_mode is "t_forney_calculator.txt";
---   begin
--- 
---     new_calculation      <= '0';
---     error_roots_in  <= (OTHERS => '0');
---     error_eval_in   <= (OTHERS => '0');
--- 
---     reset <= '1';
---     wait for 6 ns;
---     reset <= '0';
--- 
---     while not endfile(stimuli_file) loop
---       readline(stimuli_file, read_line);
---       new_calculation <= '1';
--- 
---       for i in 0 to NO_OF_CORRECTABLE_ERRORS-1 loop
---         read(read_line, gf_element_stm);
---         error_roots_in(error_roots_in'high-i*M downto error_roots_in'length-(i+1)*M) <= std_logic_vector(to_unsigned(gf_element_stm,M));
---       end loop;
--- 
+architecture forney_calculator_tb of vhdlib_tb is
+  constant GF_POLYNOMIAL            : std_logic_vector := BINARY_POLYNOMIAL_DECIMAL_19; -- irreducible, binary polynomial
+  constant NO_OF_CORRECTABLE_ERRORS : integer := 3;
+  constant NO_OF_SYNDROMES          : integer := 2*NO_OF_CORRECTABLE_ERRORS;
+  constant M                        : integer := GF_POLYNOMIAL'length-1;
+
+  signal clock            : std_logic;
+  signal reset            : std_logic;
+  signal new_calculation  : std_logic;
+  signal error_roots      : std_logic_vector(NO_OF_CORRECTABLE_ERRORS*M-1 downto 0);
+  signal error_locations  : std_logic_vector(NO_OF_CORRECTABLE_ERRORS*M-1 downto 0);
+  signal error_evaluator  : std_logic_vector(NO_OF_SYNDROMES*M-1 downto 0);
+  signal error_values     : std_logic_vector(NO_OF_CORRECTABLE_ERRORS*M-1 downto 0);
+  signal ready            : std_logic;
+
+begin
+
+  dut : entity work.forney_calculator(rtl)
+  generic map (
+    GF_POLYNOMIAL             => GF_POLYNOMIAL,
+    NO_OF_CORRECTABLE_ERRORS  => NO_OF_CORRECTABLE_ERRORS
+  )
+  port map (
+    clock           => clock,
+    reset           => reset,
+    new_calculation => new_calculation,
+    error_roots     => error_roots,
+    error_locations => error_locations,
+    error_evaluator => error_evaluator,
+    error_values    => error_values,
+    ready           => ready
+  );
+
+  clock_process : process
+  begin
+    clock <= '0';
+    wait for 5 ns;
+    clock <= '1';
+    wait for 5 ns;
+  end process clock_process;
+
+  stm_process : process
+    variable read_line      : line;
+    variable gf_element_stm : integer;
+    file stimuli_file       : text open read_mode is "t_forney_calculator.txt";
+  begin
+
+    new_calculation      <= '0';
+    error_roots  <= (OTHERS => '0');
+    error_evaluator   <= (OTHERS => '0');
+
+    reset <= '1';
+    wait for 6 ns;
+    reset <= '0';
+
+    while not endfile(stimuli_file) loop
+      readline(stimuli_file, read_line);
+      new_calculation <= '1';
+
+      for i in 0 to NO_OF_CORRECTABLE_ERRORS-1 loop
+        read(read_line, gf_element_stm);
+        error_roots(error_roots'high-i*M downto error_roots'length-(i+1)*M) <= std_logic_vector(to_unsigned(gf_element_stm,M));
+      end loop;
+
+      for i in 0 to NO_OF_SYNDROMES-1 loop
+        read(read_line, gf_element_stm);
+        error_evaluator(error_evaluator'high-i*M downto error_evaluator'length-(i+1)*M) <= std_logic_vector(to_unsigned(gf_element_stm,M));
+      end loop;
+
+      wait for 10 ns;
+
+      new_calculation  <= '0';
+
+      wait until ready = '1';
+
+      wait for 10 ns;
+
 --       for i in 0 to NO_OF_SYNDROMES-1 loop
 --         read(read_line, gf_element_stm);
---         error_eval_in(error_eval_in'high-i*M downto error_eval_in'length-(i+1)*M) <= std_logic_vector(to_unsigned(gf_element_stm,M));
+--         assert error_values(error_values'high-i*M downto error_values'length-(i+1)*M) = std_logic_vector(to_unsigned(gf_element_stm,M))
+--           report "ERROR!" severity error;
 --       end loop;
--- 
---       wait for 10 ns;
--- 
---       new_calculation  <= '0';
--- 
---       wait until ready = '1';
--- 
---       wait for 10 ns;
--- 
--- --       for i in 0 to NO_OF_SYNDROMES-1 loop
--- --         read(read_line, gf_element_stm);
--- --         assert error_values_out(error_values_out'high-i*M downto error_values_out'length-(i+1)*M) = std_logic_vector(to_unsigned(gf_element_stm,M))
--- --           report "ERROR!" severity error;
--- --       end loop;
--- 
---     end loop;
--- 
---     error_roots_in  <= (OTHERS => '0');
---     error_eval_in   <= (OTHERS => '0');
---     report "HAS ENDED!";
---     wait;
---   end process stm_process;
--- 
--- end forney_calculator_tb;
+
+    end loop;
+
+    error_roots  <= (OTHERS => '0');
+    error_evaluator   <= (OTHERS => '0');
+    report "HAS ENDED!";
+    wait;
+  end process stm_process;
+
+end forney_calculator_tb;
 
 ------------------
 -- chien_search --
@@ -827,14 +829,14 @@ architecture chien_search_tb of vhdlib_tb is
   constant NO_OF_SYNDROMES          : integer := 2*NO_OF_CORRECTABLE_ERRORS;
   constant M                        : integer := GF_POLYNOMIAL'length-1;
 
-  signal clock                : std_logic;
-  signal reset                : std_logic;
-  signal new_calculation      : std_logic;
-  signal error_locator_in     : std_logic_vector(NO_OF_SYNDROMES*M-1 downto 0);
-  signal ready                : std_logic;
-  signal error_roots_out      : std_logic_vector(NO_OF_CORRECTABLE_ERRORS*M-1 downto 0);
-  signal error_locations_out  : std_logic_vector(NO_OF_CORRECTABLE_ERRORS*M-1 downto 0);
-  signal sym_locations_out    : std_logic_vector(NO_OF_CORRECTABLE_ERRORS*M-1 downto 0);
+  signal clock            : std_logic;
+  signal reset            : std_logic;
+  signal new_calculation  : std_logic;
+  signal error_locator    : std_logic_vector(NO_OF_SYNDROMES*M-1 downto 0);
+  signal ready            : std_logic;
+  signal error_roots      : std_logic_vector(NO_OF_CORRECTABLE_ERRORS*M-1 downto 0);
+  signal error_locations  : std_logic_vector(NO_OF_CORRECTABLE_ERRORS*M-1 downto 0);
+  signal symbol_locations : std_logic_vector(NO_OF_CORRECTABLE_ERRORS*M-1 downto 0);
 
 begin
 
@@ -845,14 +847,14 @@ begin
                 NO_OF_SYNDROMES           => NO_OF_SYNDROMES
               )
   port map (
-             clock                 => clock,
-             reset                 => reset,
-             new_calculation            => new_calculation,
-             error_locator_in      => error_locator_in,
-             ready               => ready,
-             error_roots_out       => error_roots_out,
-             error_locations_out   => error_locations_out,
-             sym_locations_out   => sym_locations_out
+             clock            => clock,
+             reset            => reset,
+             new_calculation  => new_calculation,
+             error_locator    => error_locator,
+             ready            => ready,
+             error_roots      => error_roots,
+             error_locations  => error_locations,
+             symbol_locations => symbol_locations
            );
 
   clock_process : process
@@ -869,8 +871,8 @@ begin
     file stimuli_file      : text open read_mode is "t_chien_search.txt";
   begin
 
-    new_calculation        <= '0';
-    error_locator_in  <= (OTHERS => '0');
+    new_calculation <= '0';
+    error_locator   <= (OTHERS => '0');
 
     reset <= '1';
     wait for 6 ns;
@@ -882,7 +884,7 @@ begin
 
       for i in 0 to NO_OF_SYNDROMES-1 loop
         read(read_line, gf_element_stm);
-        error_locator_in(error_locator_in'high-i*M downto error_locator_in'length-(i+1)*M) <= std_logic_vector(to_unsigned(gf_element_stm,M));
+        error_locator(error_locator'high-i*M downto error_locator'length-(i+1)*M) <= std_logic_vector(to_unsigned(gf_element_stm,M));
       end loop;
 
       wait for 10 ns;
@@ -895,13 +897,13 @@ begin
 
 --       for i in 0 to NO_OF_SYNDROMES-1 loop
 --         read(read_line, gf_element_stm);
---         assert error_eval_out(error_eval_out'high-i*M downto error_eval_out'length-(i+1)*M) = std_logic_vector(to_unsigned(gf_element_stm,M))
+--         assert error_evaluator(error_evaluator'high-i*M downto error_evaluator'length-(i+1)*M) = std_logic_vector(to_unsigned(gf_element_stm,M))
 --           report "ERROR!" severity error;
 --       end loop;
 
     end loop;
 
-    error_locator_in  <= (OTHERS => '0');
+    error_locator <= (OTHERS => '0');
     report "HAS ENDED!";
     wait;
   end process stm_process;
