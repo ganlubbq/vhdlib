@@ -10,15 +10,15 @@ add wave -noupdate /vhdlib_tb/dut/new_calculation
 add wave -noupdate /vhdlib_tb/dut/ready
 add wave -noupdate /vhdlib_tb/dut/new_numerator_calculation
 add wave -noupdate /vhdlib_tb/dut/error_eval_shift_count
-add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/error_roots_in
-add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/error_eval_in
-add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/error_values_out
-add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/error_roots  
-add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/error_eval
-add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/error_eval_coefs
+add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/error_roots
+add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/error_evaluator
+add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/error_values
+add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/error_roots_registers  
+add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/error_evaluator_registers
+add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/error_eval_coefficients
 add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/numerator_values
 add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/numerator_values_latch
-add wave -noupdate /vhdlib_tb/dut/calculator_state
+add wave -noupdate /vhdlib_tb/dut/state
 
 TreeUpdate [SetDefaultTree]
 
