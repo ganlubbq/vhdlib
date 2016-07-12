@@ -10,6 +10,7 @@ add wave -noupdate /vhdlib_tb/dut/new_calculation
 add wave -noupdate /vhdlib_tb/dut/ready
 add wave -noupdate /vhdlib_tb/dut/new_numerator_calculation
 add wave -noupdate /vhdlib_tb/dut/error_eval_shift_count
+add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/term_product
 add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/error_roots
 add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/error_evaluator
 add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/error_values
