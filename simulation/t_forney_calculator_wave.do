@@ -16,7 +16,7 @@ add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/error_evaluator
 add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/error_values
 add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/error_roots_registers  
 add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/error_evaluator_registers
-add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/error_eval_coefficients
+add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/error_evaluator_coefficients
 add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/numerator_values
 add wave -noupdate -radix hexadecimal /vhdlib_tb/dut/numerator_values_latch
 add wave -noupdate /vhdlib_tb/dut/state

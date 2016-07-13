@@ -18,7 +18,7 @@ entity forney_calculator is
     new_calculation     : in  std_logic;
     error_roots         : in  std_logic_vector(NO_OF_CORRECTABLE_ERRORS*(GF_POLYNOMIAL'length-1)-1 downto 0);    -- highest order coefficient at MSBs, descending
     error_locations     : in  std_logic_vector(NO_OF_CORRECTABLE_ERRORS*(GF_POLYNOMIAL'length-1)-1 downto 0);    -- highest order coefficient at MSBs, descending
-    error_evaluator     : in  std_logic_vector(2*NO_OF_CORRECTABLE_ERRORS*(GF_POLYNOMIAL'length-1)-1 downto 0);  -- highest order coefficient at MSBs, descending
+    error_evaluator     : in  std_logic_vector(NO_OF_CORRECTABLE_ERRORS*(GF_POLYNOMIAL'length-1)-1 downto 0);  -- highest order coefficient at MSBs, descending
     error_values        : out std_logic_vector(NO_OF_CORRECTABLE_ERRORS*(GF_POLYNOMIAL'length-1)-1 downto 0);    -- highest order coefficient at MSBs, descending
     ready               : out std_logic
   );
@@ -36,23 +36,23 @@ architecture rtl of forney_calculator is
 
   constant NO_OF_COEFFICIENTS  : natural := 1;
 
-  signal state                      : calculator_state;
-  signal error_evaluator_registers  : std_logic_vector(2*NO_OF_CORRECTABLE_ERRORS*M-1 downto 0);
-  signal error_roots_registers      : std_logic_vector(NO_OF_CORRECTABLE_ERRORS*M-1 downto 0);
-  signal error_locations_registers  : std_logic_vector(NO_OF_CORRECTABLE_ERRORS*M-1 downto 0);
-  signal error_values_registers     : gf_array_desc_t(NO_OF_CORRECTABLE_ERRORS-1 downto 0);
-  signal error_eval_coefficients    : std_logic_vector(NO_OF_COEFFICIENTS*M-1 downto 0);
-  signal numerator_values           : std_logic_vector(NO_OF_CORRECTABLE_ERRORS*M-1 downto 0);
-  signal numerator_values_latch     : std_logic_vector(NO_OF_CORRECTABLE_ERRORS*M-1 downto 0);
-  signal denominator_values         : std_logic_vector(NO_OF_CORRECTABLE_ERRORS*M-1 downto 0);
-  signal denominator_products       : std_logic_vector(NO_OF_CORRECTABLE_ERRORS*M-1 downto 0);
-  signal denominator_values_latch   : std_logic_vector(NO_OF_CORRECTABLE_ERRORS*M-1 downto 0);
-  signal term_product               : gf_elem;
-  signal error_eval_shift_count     : natural range 0 to (2*NO_OF_CORRECTABLE_ERRORS)/NO_OF_COEFFICIENTS;
-  signal numerator_values_ready     : std_logic;
-  signal denominator_values_ready   : std_logic;
-  signal new_numerator_calculation  : std_logic;
-  signal clock_enable               : std_logic;
+  signal state                        : calculator_state;
+  signal error_evaluator_registers    : std_logic_vector(NO_OF_CORRECTABLE_ERRORS*M-1 downto 0);
+  signal error_roots_registers        : std_logic_vector(NO_OF_CORRECTABLE_ERRORS*M-1 downto 0);
+  signal error_locations_registers    : std_logic_vector(NO_OF_CORRECTABLE_ERRORS*M-1 downto 0);
+  signal error_values_registers       : gf_array_desc_t(NO_OF_CORRECTABLE_ERRORS-1 downto 0);
+  signal error_evaluator_coefficients : std_logic_vector(NO_OF_COEFFICIENTS*M-1 downto 0);
+  signal numerator_values             : std_logic_vector(NO_OF_CORRECTABLE_ERRORS*M-1 downto 0);
+  signal numerator_values_latch       : std_logic_vector(NO_OF_CORRECTABLE_ERRORS*M-1 downto 0);
+  signal denominator_values           : std_logic_vector(NO_OF_CORRECTABLE_ERRORS*M-1 downto 0);
+  signal denominator_products         : std_logic_vector(NO_OF_CORRECTABLE_ERRORS*M-1 downto 0);
+  signal denominator_values_latch     : std_logic_vector(NO_OF_CORRECTABLE_ERRORS*M-1 downto 0);
+  signal term_product                 : gf_elem;
+  signal error_eval_shift_count       : natural range 0 to (NO_OF_CORRECTABLE_ERRORS)/NO_OF_COEFFICIENTS;
+  signal numerator_values_ready       : std_logic;
+  signal denominator_values_ready     : std_logic;
+  signal new_numerator_calculation    : std_logic;
+  signal clock_enable                 : std_logic;
 
 begin
 
@@ -72,7 +72,7 @@ begin
       reset             => reset,
       clock_enable      => clock_enable,
       new_calculation   => new_numerator_calculation,
-      coefficients      => error_eval_coefficients,
+      coefficients      => error_evaluator_coefficients,
       evaluation_values => error_roots_registers,
       start_values      => (OTHERS => '0'),
       result_values     => numerator_values
@@ -129,16 +129,13 @@ begin
       new_numerator_calculation <= '0';
       error_values <= (OTHERS => '0');
 
-      -- >>>>>>>>>>>>>>
       -- shift error_evaluator_registers registers
       error_evaluator_registers <= (OTHERS => '0');
       error_evaluator_registers(error_evaluator_registers'high(1) downto M*NO_OF_COEFFICIENTS) <= error_evaluator_registers(error_evaluator_registers'high(1)-M*NO_OF_COEFFICIENTS downto 0); -- shift left
---       error_evaluator_registers(error_evaluator_registers'high(1)-M*NO_OF_COEFFICIENTS downto 0) <= error_evaluator_registers(error_evaluator_registers'high(1) downto M*NO_OF_COEFFICIENTS); -- shift right
-      -- <<<<<<<<<<<<<<
 
       if state = CALCULATING then
 
-        if numerator_values_ready = '0' and error_eval_shift_count = (2*NO_OF_CORRECTABLE_ERRORS)/NO_OF_COEFFICIENTS then
+        if numerator_values_ready = '0' and error_eval_shift_count = NO_OF_CORRECTABLE_ERRORS/NO_OF_COEFFICIENTS then
           numerator_values_latch <= numerator_values;
           error_eval_shift_count <= 1;
           numerator_values_ready <= '1';
@@ -157,15 +154,12 @@ begin
       -- if new input is given then reset calculation
       if new_calculation = '1' then
         -- read in new data; start calculation
-        -- >>>>>>>>>>>>>>
-        -- No reversing
---         error_evaluator_registers <= error_evaluator;
 
         -- Reverse error evaluator polynomial 
-        for i in 0 to 2*NO_OF_CORRECTABLE_ERRORS-1 loop
-          error_evaluator_registers((2*NO_OF_CORRECTABLE_ERRORS-i)*M-1 downto (2*NO_OF_CORRECTABLE_ERRORS-i-1)*M) <= error_evaluator((i+1)*M-1 downto i*M);
+        for i in 0 to NO_OF_CORRECTABLE_ERRORS-1 loop
+          error_evaluator_registers((NO_OF_CORRECTABLE_ERRORS-i)*M-1 downto (NO_OF_CORRECTABLE_ERRORS-i-1)*M) <= error_evaluator((i+1)*M-1 downto i*M);
         end loop;
-        -- <<<<<<<<<<<<<<
+
         error_roots_registers <= error_roots;
 
         error_values_registers <= (OTHERS => GF_ZERO);
@@ -191,10 +185,7 @@ begin
     end if;
   end process clock_process;
 
-  -- >>>>>>>>>>>>>>
   -- drive input coefficients signal to gf_horner_evaluator
-  error_eval_coefficients <= error_evaluator_registers(error_evaluator_registers'high(1) downto error_evaluator_registers'length(1)-M*NO_OF_COEFFICIENTS); -- coefficients in MSBs
---   error_eval_coefficients <= error_evaluator_registers(M*NO_OF_COEFFICIENTS-1 downto 0); -- coefficients in LSBs
-  -- <<<<<<<<<<<<<<
+  error_evaluator_coefficients <= error_evaluator_registers(error_evaluator_registers'high(1) downto error_evaluator_registers'length(1)-M*NO_OF_COEFFICIENTS); -- coefficients in MSBs
 
 end rtl;

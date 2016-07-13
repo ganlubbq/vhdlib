@@ -736,7 +736,7 @@ architecture forney_calculator_tb of vhdlib_tb is
   signal new_calculation  : std_logic;
   signal error_roots      : std_logic_vector(NO_OF_CORRECTABLE_ERRORS*M-1 downto 0);
   signal error_locations  : std_logic_vector(NO_OF_CORRECTABLE_ERRORS*M-1 downto 0);
-  signal error_evaluator  : std_logic_vector(NO_OF_SYNDROMES*M-1 downto 0);
+  signal error_evaluator  : std_logic_vector(NO_OF_CORRECTABLE_ERRORS*M-1 downto 0);
   signal error_values     : std_logic_vector(NO_OF_CORRECTABLE_ERRORS*M-1 downto 0);
   signal ready            : std_logic;
 
@@ -772,9 +772,9 @@ begin
     file stimuli_file       : text open read_mode is "t_forney_calculator.txt";
   begin
 
-    new_calculation      <= '0';
-    error_roots  <= (OTHERS => '0');
-    error_evaluator   <= (OTHERS => '0');
+    new_calculation <= '0';
+    error_roots <= (OTHERS => '0');
+    error_evaluator <= (OTHERS => '0');
 
     reset <= '1';
     wait for 6 ns;
@@ -789,7 +789,7 @@ begin
         error_roots(error_roots'high-i*M downto error_roots'length-(i+1)*M) <= std_logic_vector(to_unsigned(gf_element_stm,M));
       end loop;
 
-      for i in 0 to NO_OF_SYNDROMES-1 loop
+      for i in 0 to NO_OF_CORRECTABLE_ERRORS-1 loop
         read(read_line, gf_element_stm);
         error_evaluator(error_evaluator'high-i*M downto error_evaluator'length-(i+1)*M) <= std_logic_vector(to_unsigned(gf_element_stm,M));
       end loop;
