@@ -8,8 +8,13 @@ t = 3;
 a = gf(2,4);
 
 %received vector
-r = gf([0 0 0 a^7 0 0 a^3 0 0 0 0 0 a^4 0 0],a.m,a.prim_poly);
-% r = gf([0 0 0 0 0 0 a^3 0 0 0 0 0 a^4 0 0],a.m,a.prim_poly);
+%r = gf([0 0 0 a^7 0 0 a^3 0 0 0 0 0 a^4 0 0],a.m,a.prim_poly);
+%r = gf([0 0 0 0 0 0 a^3 0 0 0 0 0 a^4 0 0],a.m,a.prim_poly);
+%r = gf([0 0 0 0 0 0 a^3 0 0 0 0 0 0 0 0],a.m,a.prim_poly);
+%r = gf([a^2 0 0 0 0 0 a^3 0 0 0 0 0 a^4 0 0],a.m,a.prim_poly);
+%r = gf([a^6 0 0 0 0 0 a^3 0 0 0 0 0 a^4 0 0],a.m,a.prim_poly);
+%r = gf([a^6 0 0 0 0 0 0 0 0 0 0 0 a^4 0 0],a.m,a.prim_poly);
+r = gf([0 0 0 a^10 0 0 0 0 a^7 0 0 0 0 a^9 0],a.m,a.prim_poly);
 
 %calculate syndromes
 s = gf(zeros(1,2*t),a.m,a.prim_poly);
@@ -67,19 +72,19 @@ for i=0:2^a.m-2
 end
 
 % degree of error-locator polynomial
-lcx = length(cx); 
+degree_of_cx = length(cx); 
 for i=1:length(cx)
-    lcx = lcx-1;
+    degree_of_cx = degree_of_cx-1;
     if cx(i) ~= 0
         break
     end
 end
 
 % calculate error evaluator polynomial
-error_evaluator = gf(zeros(1,lcx),a.m,a.prim_poly);
-for i=1:lcx
-    tmps = gf(s(lcx+1-i:-1:1),a.m,a.prim_poly);
-    tmpc = gf(cx(length(cx):-1:length(cx)-lcx+i),a.m,a.prim_poly);
+error_evaluator = gf(zeros(1,degree_of_cx),a.m,a.prim_poly);
+for i=1:degree_of_cx
+    tmps = gf(s(degree_of_cx+1-i:-1:1),a.m,a.prim_poly);
+    tmpc = gf(cx(length(cx):-1:length(cx)-degree_of_cx+i),a.m,a.prim_poly);
     tmp = tmps.*tmpc;
 
     for k=1:length(tmp)
@@ -93,12 +98,34 @@ end
 % Calculate numerators
 eval_numerators = gf(zeros(size(error_evaluator)),a.m,a.prim_poly);
 for i=1:length(error_locator_roots)
+    % fprintf('Iteration: %i\n',i);
     for k=1:length(error_evaluator)
         eval_numerators(i) = eval_numerators(i) + error_evaluator(k)*error_locator_roots(i)^(k-1);
+        ee = error_evaluator(k);
+        elr = error_locator_roots(i);
+        % fprintf('i %i k %i: %i %i\n',i,k,ee.x,elr.x);
     end
-    en = eval_numerators(i);
-    fprintf('Numerator %i: %i\n',i,en.x);
 end
+
+% Horner scheme for numerator calculation
+% eval_numerators = gf(zeros(size(error_evaluator)),a.m,a.prim_poly);
+% relr = error_locator_roots;
+% rev = error_evaluator(length(error_evaluator):-1:1);
+% for i=1:length(relr)
+%     % print coefficient
+%     elr = relr(i);
+%     fprintf('Coefficient: %i',elr.x);
+% 
+%     % calculate next iteration of polynomial evaluation
+%     for k=1:length(eval_numerators)
+%         eval_numerators(k) = eval_numerators(k)*relr(k) + rev(i);
+%     end
+% 
+%     % print numerators
+%     % fprintf(file,' %i',eval_numerators.x);
+%     % fprintf(file,'\n');
+% end
+% eval_numerators.x
 
 % Calculate denominators
 eval_denominators = gf(zeros(size(error_locator_roots)),a.m,a.prim_poly);
@@ -118,12 +145,18 @@ for i=1:length(error_locations)
     ev(i) = eval_numerators(i)*inv(eval_denominators(i));
 end
 
-z0evalx = eval_numerators.x;
-z0x = error_evaluator.x;
+eval_numerators_x = eval_numerators.x;
+error_evaluator_x = error_evaluator.x;
 eix = symbol_locations.x;
 erx = error_locator_roots.x;
+fprintf('Numerators %i\n',eval_numerators_x);
 
-fprintf(file,'%i ',[erx zeros(1,length(cx)-lcx) z0x]);
+outputarray = [zeros(1,t-length(erx)) erx error_evaluator_x zeros(1,t-length(error_evaluator_x))];
+fprintf('Testfile:\n');
+fprintf('%i ',outputarray);
+fprintf('\n');
+
+fprintf(file,'%i ',outputarray);
 fprintf(file,'\n');
 
 fclose(file);
