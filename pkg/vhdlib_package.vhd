@@ -119,11 +119,11 @@ package body vhdlib_package is
                                             divisor : std_logic_vector)
     return std_logic_vector is
 
-    constant M      : natural := divisor'length-1;
+    constant M : natural := divisor'length-1;
     variable vector : std_logic_vector(dividend'length-1 downto 0);
     variable result : std_logic_vector(M-1 downto 0);
   begin
-    vector   := dividend;
+    vector := dividend;
     result := (OTHERS => '0');
 
     for i in vector'high downto M loop
@@ -141,7 +141,6 @@ package body vhdlib_package is
 
     return result;
   end function binary_polynomial_division;
-
 
   --
   -- Function:
@@ -164,7 +163,7 @@ package body vhdlib_package is
 
     variable vector : std_logic_vector(dividend_length-1 downto 0);
   begin
-    vector         := (OTHERS => '0');
+    vector := (OTHERS => '0');
     vector(vector'high) := '1';
 
     return binary_polynomial_division(vector, divisor);
@@ -211,7 +210,7 @@ package body vhdlib_package is
   pure function binary_matrix_multiply  (binary_matrix_a : binary_matrix_t;
                                          binary_matrix_b : binary_matrix_t)
     return binary_matrix_t is
-    variable result  : binary_matrix_t(binary_matrix_a'range(1), binary_matrix_b'range(2));
+    variable result : binary_matrix_t(binary_matrix_a'range(1), binary_matrix_b'range(2));
   begin
     -- number of columns in binary_matrix_a must equal number of rows in binary_matrix_b
     assert binary_matrix_a'length(2) = binary_matrix_b'length(1)
@@ -251,7 +250,7 @@ package body vhdlib_package is
   pure function binary_matrix_exponentiation (n : natural;
                                               binary_matrix : binary_matrix_t)
     return binary_matrix_t is
-    variable result  : binary_matrix_t(binary_matrix'range, binary_matrix'range);
+    variable result : binary_matrix_t(binary_matrix'range, binary_matrix'range);
   begin
     result := binary_matrix;
 

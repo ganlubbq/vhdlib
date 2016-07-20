@@ -16,13 +16,18 @@ a = gf(2,4);
 %r = gf([a^6 0 0 0 0 0 0 0 0 0 0 0 a^4 0 0],a.m,a.prim_poly);
 r = gf([0 0 0 a^10 0 0 0 0 a^7 0 0 0 0 a^9 0],a.m,a.prim_poly);
 
-%calculate syndromes
+ai = a.^(1:2*t);
+
+fprintf('Horner scheme syndromes:');
 s = gf(zeros(1,2*t),a.m,a.prim_poly);
-for i=1:length(s)
-    for k=1:length(r)
-        s(i) = s(i) + r(k)*(a^i)^(k-1);
+rr = r(length(r):-1:1);
+for i=1:length(rr)
+    % calculate next iteration of polynomial evaluation
+    for k=1:length(s)
+        s(k) = s(k)*ai(k) + rr(i);
     end
 end
+s.x
 
 % Berlekamp-Massey algorithm
 cx = gf([zeros(1,2*t-1) 1],a.m,a.prim_poly);
@@ -101,8 +106,8 @@ for i=1:length(error_locator_roots)
     % fprintf('Iteration: %i\n',i);
     for k=1:length(error_evaluator)
         eval_numerators(i) = eval_numerators(i) + error_evaluator(k)*error_locator_roots(i)^(k-1);
-        ee = error_evaluator(k);
-        elr = error_locator_roots(i);
+        %ee = error_evaluator(k);
+        %elr = error_locator_roots(i);
         % fprintf('i %i k %i: %i %i\n',i,k,ee.x,elr.x);
     end
 end
